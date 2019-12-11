@@ -84,6 +84,17 @@ export default function CreateVote(props) {
                 />
                 </Form.Field>
                 <Form.Field>
+                <Dropdown
+                    label='Approved'
+                    fluid
+                    onChange={onChange}
+                    state='approved'
+                    placeholder="Require Approval?"
+                    selection
+                    options={[{key:0, value: true, text: "False"}, {key:1, value: true, text: "True"}]}
+                />
+                </Form.Field>
+                <Form.Field>
                 <Input
                     label='Data'
                     fluid

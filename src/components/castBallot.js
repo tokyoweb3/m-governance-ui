@@ -1,21 +1,24 @@
 import React, {useState} from 'react';
-import { Button, Dropdown, Form, Input } from 'semantic-ui-react';
+import { Button, Dropdown, Form } from 'semantic-ui-react';
 
-export default function Transfer2 (props) {
-  const { api, keyring } = props;
+export default function CastBallot(props) {
+  const { api, keyring, id } = props;
   const [status, setStatus] = useState('');
   const initialState = {
     addressFrom: '',
-    addressTo: '',
-    amount: 0
+    reference_id: id,
+    ballot: ''
   };
   const [formState, setFormState] = useState(initialState);
-  const { addressTo, addressFrom, amount } = formState;
-
+  const { addressFrom, reference_id, ballot } = formState;
+  const ballotOptions = [
+    {key: "Aye", value: "Aye", text: "Aye"},
+    {key: "Nay", value: "Nay", text: "Nay"}
+  ];
   const keyringOptions = keyring.getPairs().map((account) => ({
-    key: account.address,
-    value: account.address,
-    text: account.meta.name.toUpperCase()
+      key: account.address,
+      value: account.address,
+      text: account.meta.name.toUpperCase()
   }));
 
   const onChange = (_, data) => {
@@ -27,16 +30,14 @@ export default function Transfer2 (props) {
     });
   }
 
-  const makeTransfer = () => {
+  const castBallot = () => {
     const fromPair = keyring.getPair(addressFrom);
-
     setStatus('Sending...');
 
-    api.tx.balances
-    .transfer(addressTo, amount)
-    .signAndSend(fromPair, ({ status }) => {
-      //ここで使うstatusはstateじゃない
-        if (status.isFinalized) {
+    api.tx.governanceModule
+    .castBallot(reference_id, ballot)
+    .signAndSend(fromPair, ({status}) => {
+      if (status.isFinalized) {
         setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
         } else {
         setStatus(`Current transfer status: ${status.type}`);
@@ -45,15 +46,15 @@ export default function Transfer2 (props) {
       setStatus(':( transaction failed');
       console.error('ERROR:', e);
     });
-  };
+  }
 
-  return (
+  return(
     <>
-      <h1>Transfer</h1>
+      <h1>Cast Ballot</h1>
       <Form>
         <Form.Field>
           <Dropdown
-            placeholder='Select from  your accounts'
+            placeholder='Select from your accounts'
             fluid
             label="From"
             onChange={onChange}
@@ -64,30 +65,22 @@ export default function Transfer2 (props) {
           />
         </Form.Field>
         <Form.Field>
-          <Input
-            onChange={onChange}
-            label='To'
-            fluid
-            placeholder='address'
-            state='addressTo'
-            type='text'
-          />
-        </Form.Field>
-        <Form.Field>
-          <Input
-            label='Amount'
+          <Dropdown
+            placeholder='Select your answer'
+            label='Ballot'
             fluid
             onChange={onChange}
-            state='amount'
-            type='number'
+            search
+            selection
+            state='ballot'
+            options={ballotOptions}
           />
         </Form.Field>
         <Form.Field>
           <Button
-            onClick={makeTransfer}
+            onClick={castBallot}
             primary
-            type='submit'
-          >
+            type='submit'>
             Send
           </Button>
           {status}

@@ -1,22 +1,37 @@
+// React API
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+// Polkadot API
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import keyring from '@polkadot/ui-keyring';
-import React, { useState, useEffect } from 'react';
+// Styles, tools
 import { Container, Dimmer, Loader} from 'semantic-ui-react';
 import types from './Type';
-
+// Components
+import MenuBar from './components/MenuBar';
 import Balances from './Balances';
 import NodeInfo from './NodeInfo';
 import Transfer from './Transfer';
 import CreateVote from './components/createVote';
-import ViewVote from './components/viewVote';
+import VoteListings from './components/VoteListings';
+import VoteView from './components/VoteView';
+import Certificate from './components/Certificate';
 
 import 'semantic-ui-css/semantic.min.css'
+
+
 
  export default function App () {
   const [api, setApi] = useState();
   const [apiReady, setApiReady] = useState();
+  const [blockNumber, setBlockNumber] = useState('1');
   const WS_PROVIDER = 'ws://127.0.0.1:9944';
   // const WS_PROVIDER = 'wss://dev-node.substrate.dev:9944';
+  // const getBlockNumber = (api) => {
+  //   api.rpc.chain.getBlock(blockNumber => {
+  //     setBlockNumber(blockNumber.block.header.number);
+  //   })
+  // }
 
   useEffect(() => {
     const provider = new WsProvider(WS_PROVIDER);
@@ -35,7 +50,20 @@ import 'semantic-ui-css/semantic.min.css'
     });
   },[]); 
 
-
+  useEffect(() => {
+    if(apiReady){
+      let unsubscribe;
+      const getBlockNumber = () => {
+        api.rpc.chain.getBlock(blockNumber => {
+          setBlockNumber(blockNumber.block.header.number);
+        })
+        .then((unsub)=> {unsubscribe = unsub; })
+        .catch((e) => console.error(e))
+      }
+      getBlockNumber();
+      return ()=> unsubscribe && unsubscribe();
+    }
+  },[blockNumber, apiReady]);
 
   const loader = function (text){
     return (
@@ -48,28 +76,59 @@ import 'semantic-ui-css/semantic.min.css'
   if(!apiReady){
     return loader('Connecting to the blockchain')
   }
-
+  
   return (
     <Container>
       <NodeInfo
         api={api}
+        blockNumber={blockNumber}
       />
-      <ViewVote
-        api={api}
-        keyring={keyring}
-      />
-      <CreateVote
-        api={api}
-        keyring={keyring}
-      />
-      <Balances
-        keyring={keyring}
-        api={api}
-      />
-      <Transfer
-        api={api}
-        keyring={keyring}
-      />
+
+      <Router>
+        <div>
+          <MenuBar/>
+          <Switch>
+            <Route 
+              path="/vote/:id" 
+              children={<VoteView api={api} keyring={keyring}/>}
+            />
+            <Route path="/vote">
+            <VoteListings
+              api={api}
+              keyring={keyring}
+              blockNumber={blockNumber}
+            />
+            <CreateVote
+              api={api}
+              keyring={keyring}
+            />
+            </Route>
+
+            <Route path="/ballot">
+              <h3>Ballot</h3>
+            </Route>
+            <Route path="/transfer">
+            <Balances
+              keyring={keyring}
+              api={api}
+            />
+            <Transfer
+              api={api}
+              keyring={keyring}
+            />
+            </Route>
+            <Route path="/certificate">
+              <Certificate
+                api={api}
+                keyring={keyring}
+              />
+            </Route>
+            <Route path="/">
+              <h3>Home</h3>
+            </Route>
+          </Switch>
+        </div>
+      </Router>
     </Container>
   );
 }
