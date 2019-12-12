@@ -111,9 +111,6 @@ export default function ConcludeVote(props) {
           <Button
             onClick={concludeVote}
             disabled={isDisabled(isConcluded, isSelected, isExpired)}
-            // isSelected: T F
-            // isConcluded: F T
-            // isExpired: T F
             primary
             type='submit'>
             Conclude

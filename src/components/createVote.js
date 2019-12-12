@@ -91,7 +91,7 @@ export default function CreateVote(props) {
                     state='approved'
                     placeholder="Require Approval?"
                     selection
-                    options={[{key:0, value: true, text: "False"}, {key:1, value: true, text: "True"}]}
+                    options={[{key:0, value: false, text: "False"}, {key:1, value: true, text: "True"}]}
                 />
                 </Form.Field>
                 <Form.Field>

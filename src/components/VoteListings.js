@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
-// TODO: remove let voteArray????, instead use arrayState
 
 export default function VoteListings (props) {
   const { api, blockNumber } = props;
@@ -9,7 +8,6 @@ export default function VoteListings (props) {
   const [voteCountState, setVoteCountState] = useState(0);
   const [votes, setVotes] = useState({});
   const [arrayState, setArrayState] = useState({list:[]});
-  let voteArray = [];
 
   useEffect(() => {
     let unsubscribe;
@@ -20,11 +18,11 @@ export default function VoteListings (props) {
     .catch(console.error);
 
     return () => unsubscribe && unsubscribe();
-  }, [api.query.governanceModule.allVoteCount, setVotes])
+  }, [api.query.governanceModule, setVotes])
 
   useEffect(() => {
     let unsubscribeAll;
-    voteArray = [...Array(parseInt(voteCountState)).keys()].map(x=> ++x)
+    let voteArray = [...Array(parseInt(voteCountState)).keys()].map(x=> ++x)
     setArrayState({ list:voteArray });
     api.query.governanceModule.votesByIndex
       .multi(voteArray, (votes) => {
@@ -58,12 +56,11 @@ export default function VoteListings (props) {
   }
 
 
-  const colorByExpired = (expiry) =>{
-    if(expiry < blockNumber){
-      return {color: 'red'}
-    } else{
-      return {color: 'green'}
-    }
+  const colorByExpired = (vote_ends) =>{
+    if(parseInt(vote_ends) > blockNumber){
+      return {color: 'green'};
+    } 
+    return {color: 'red'};
   }
   const colorByBool = (bool) =>{
     if(bool === 'true'){

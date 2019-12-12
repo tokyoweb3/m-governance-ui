@@ -4,6 +4,8 @@ import { useParams, Link } from 'react-router-dom';
 // components
 import CastBallot from './castBallot';
 import ConcludeVote from './concludeVote';
+import ResultChart from './ResultChart';
+
 // Details about Vote of specific id
 // query: votesByIndex, voteResult, votedAccounts
 // tx: ballot, conclude, lockvote, withdraw
@@ -88,7 +90,8 @@ export default function VoteView(props) {
 
 
       <CastBallot api={api} keyring={keyring} id={id}/>
-      <ConcludeVote api={api} keyring={keyring} id={id} vote_ends={vote_ends} concluded={concluded} blockNumber={blockNumber}/>
+      <ResultChart aye={aye} nay={nay}/>
+      <ConcludeVote api={api} keyring={keyring} id={id} vote_ends={parseInt(vote_ends)} concluded={concluded} blockNumber={parseInt(blockNumber)}/>
     </>
   );
 }

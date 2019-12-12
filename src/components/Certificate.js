@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Dropdown, Form, Input } from 'semantic-ui-react';
 
 export default function Certificate (props) {
