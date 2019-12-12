@@ -1,21 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import { UnsubscriptionError } from 'rxjs';
 
 export default function NodeInfo(props) {
   const {api, blockNumber} = props;
   const [nodeInfo, setNodeInfo] = useState({});
-  // const [blockNumber, setBlockNumber] = useState('0');
 
   useEffect(() => {
     let unsubscribe;
-    // const getBlockNumber = () => {
-    //   api.rpc.chain.getBlock(blockNumber => {
-    //     setBlockNumber(blockNumber.block.header.number);
-    //   })
-    //   .then((unsub)=> {unsubscribe = unsub; })
-    //   .catch((e) => console.error(e))
-    // }
-
     const getInfo = () => {
       Promise.all([
         api.rpc.system.chain(),
@@ -33,10 +23,9 @@ export default function NodeInfo(props) {
       .catch((e) => console.error(e));
     }
     getInfo()
-    // getBlockNumber();
 
     return ()=> unsubscribe && unsubscribe();
-  },[api.rpc.system, api.rpc.chain, blockNumber]);
+  },[api.rpc.system]);
   
   return (
     <>

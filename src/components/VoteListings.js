@@ -65,11 +65,11 @@ export default function VoteListings (props) {
       return {color: 'green'}
     }
   }
-  const colorByApproved = (approved) =>{
-    if(approved === 'false'){
-      return {color: 'red'}
-    } else{
+  const colorByBool = (bool) =>{
+    if(bool === 'true'){
       return {color: 'green'}
+    } else{
+      return {color: 'red'}
     }
   }
   return (
@@ -95,11 +95,11 @@ export default function VoteListings (props) {
                 <Table.Cell textAlign='right'><Link to={`/vote/${id}`}>{id}</Link>
                 </Table.Cell>
                 <Table.Cell>{votes[id] && typeOfVote(votes[id].vote_type)}</Table.Cell>
-                <Table.Cell style={colorByApproved(votes[id] && votes[id].approved)}>{votes[id] && votes[id].approved}</Table.Cell>
+                <Table.Cell style={colorByBool(votes[id] && votes[id].approved)}>{votes[id] && votes[id].approved}</Table.Cell>
                 <Table.Cell>{votes[id] && votes[id].creator}</Table.Cell>
                 <Table.Cell>{votes[id] && votes[id].when}</Table.Cell>
                 <Table.Cell style={colorByExpired(votes[id] && votes[id].vote_ends)}>{votes[id] && votes[id].vote_ends}</Table.Cell>
-                <Table.Cell>{votes[id] && votes[id].concluded}</Table.Cell>
+                <Table.Cell style={colorByBool(votes[id] && votes[id].concluded)}>{votes[id] && votes[id].concluded}</Table.Cell>
               </Table.Row>
             );
           })}

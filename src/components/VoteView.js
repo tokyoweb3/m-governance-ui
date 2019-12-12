@@ -3,12 +3,12 @@ import { useParams, Link } from 'react-router-dom';
 
 // components
 import CastBallot from './castBallot';
-
+import ConcludeVote from './concludeVote';
 // Details about Vote of specific id
 // query: votesByIndex, voteResult, votedAccounts
 // tx: ballot, conclude, lockvote, withdraw
 export default function VoteView(props) {
-  const { api, keyring } = props;
+  const { api, keyring, blockNumber } = props;
   const { id } = useParams();
   const [voteState, setVoteState] = useState({});
   const { vote_type, approved, creator, vote_ends, when, concluded, hash, aye, nay } = voteState;
@@ -88,6 +88,7 @@ export default function VoteView(props) {
 
 
       <CastBallot api={api} keyring={keyring} id={id}/>
+      <ConcludeVote api={api} keyring={keyring} id={id} vote_ends={vote_ends} concluded={concluded} blockNumber={blockNumber}/>
     </>
   );
 }

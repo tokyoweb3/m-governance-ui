@@ -90,7 +90,7 @@ import 'semantic-ui-css/semantic.min.css'
           <Switch>
             <Route 
               path="/vote/:id" 
-              children={<VoteView api={api} keyring={keyring}/>}
+              children={<VoteView api={api} keyring={keyring} blockNumber={blockNumber}/>}
             />
             <Route path="/vote">
             <VoteListings
