@@ -19,19 +19,11 @@ import Certificate from './components/Certificate';
 
 import 'semantic-ui-css/semantic.min.css'
 
-
-
- export default function App () {
+export default function App () {
   const [api, setApi] = useState();
   const [apiReady, setApiReady] = useState();
   const [blockNumber, setBlockNumber] = useState('1');
   const WS_PROVIDER = 'ws://127.0.0.1:9944';
-  // const WS_PROVIDER = 'wss://dev-node.substrate.dev:9944';
-  // const getBlockNumber = (api) => {
-  //   api.rpc.chain.getBlock(blockNumber => {
-  //     setBlockNumber(blockNumber.block.header.number);
-  //   })
-  // }
 
   useEffect(() => {
     const provider = new WsProvider(WS_PROVIDER);

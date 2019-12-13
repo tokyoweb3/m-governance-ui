@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Dropdown, Form, Input } from 'semantic-ui-react';
+import Sign from './Sign.js';
 
 export default function Certificate (props) {
   const { api, keyring } = props;
@@ -104,6 +105,8 @@ export default function Certificate (props) {
                 {status}
                 </Form.Field>
             </Form>
+        <h2>Signing with a key via Fortify</h2>
+        <Sign />
     </>
   );
 }
