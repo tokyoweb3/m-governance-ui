@@ -18,7 +18,6 @@ export default function Provider () {
   const [webS, setWebS] = useState();
 
   const onChange = (_, provider) => {
-    console.log(provider.value);
     setSelectedProvider(provider.value);
   }
 
@@ -38,7 +37,9 @@ export default function Provider () {
   }, [window.WebcryptoSocket])
 
   const refresh = async () => {
-    getItems(selectedProvider, webS);
+    if(selectedProvider) {
+      getItems(selectedProvider, webS);
+    }
   }
 
   async function main() {
@@ -72,33 +73,29 @@ export default function Provider () {
 
   const fillProviders = async (ws) => {
     ws.info()
-    .then((info) => {
-      // print info about each provider
-      for (var i=0; i < info.providers.length; i++) {
-        var provider = info.providers[i];
-        setProviderOptions([
-          ...providerOptions,
-          {
-            key: provider.id,
-            value: provider.id,
-            text: provider.name
-          }
-        ]);
-        setProviders([
-          ...providers,
-          {
-            id: provider.id,
-            name: provider.name,
-            atr: provider.atr
-          }
-        ]);
-      }
-        // get first provider
-        return ws.getCrypto(provider.id);
-    })
-    .then(function(crypto){
-      // console.log(crypto);
-    });
+      .then(info => {
+        for (const index in info.providers){
+          setProviderOptions(oldValues => {
+            const newValues = [...oldValues];
+            newValues[index] = {
+              key: info.providers[index].id,
+              value: info.providers[index].id,
+              text: info.providers[index].name
+            };
+            return newValues;
+          });
+
+          setProviders(oldValues => {
+            const newValues = [...oldValues];
+            newValues[index] =  {
+              id: info.providers[index].id,
+              name: info.providers[index].name,
+              atr: info.providers[index].atr || "None"
+            };
+            return newValues;
+          });
+        }
+      });
   }
 
   async function getItems(providerId, ws){
