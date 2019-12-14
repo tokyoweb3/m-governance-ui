@@ -45,17 +45,15 @@ export default function App () {
   useEffect(() => {
     if(apiReady){
       let unsubscribe;
-      const getBlockNumber = () => {
-        api.rpc.chain.getBlock(blockNumber => {
-          setBlockNumber(blockNumber.block.header.number);
-        })
-        .then((unsub)=> {unsubscribe = unsub; })
-        .catch((e) => console.error(e))
-      }
-      getBlockNumber();
-      return ()=> unsubscribe && unsubscribe();
+      const f = async () => api.rpc.chain.subscribeNewHeads((header) => {
+        setBlockNumber(header.number);
+      });
+      f().then(unsub => {
+        unsubscribe = unsub;
+      }).catch(console.error);
+      return () => unsubscribe && unsubscribe();
     }
-  },[blockNumber, apiReady]);
+  },[apiReady]);
 
   const loader = function (text){
     return (

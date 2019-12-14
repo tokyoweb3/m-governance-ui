@@ -43,7 +43,7 @@ export default function VoteView(props) {
     }).catch(console.error);
     
     return () => unsubscribe && unsubscribe();
-  }, [ api.query.governanceModule, id ])
+  }, [ id ])
 
   const typeOfVote = (vote_type) => {
     switch(vote_type) {

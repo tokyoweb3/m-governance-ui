@@ -151,13 +151,13 @@ async function main() {
         // ask to approve session
         await ws.login();
       }
-
+    
       ws.info()
         .then(function(info) {
             // print info about each provider
             for (var i=0; i < info.providers.length; i++) {
                 var provider = info.providers[i];
-                console.log(provider);
+                // console.log(provider);
             }
 
             // get first provider
@@ -165,7 +165,7 @@ async function main() {
         })
         .then(function(crypto){
 
-          console.log(crypto);
+          // console.log(crypto);
 
         });
       // await FillData();

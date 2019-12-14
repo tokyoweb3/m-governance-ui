@@ -5,7 +5,7 @@ export default function NodeInfo(props) {
   const [nodeInfo, setNodeInfo] = useState({});
 
   useEffect(() => {
-    let unsubscribe;
+    // let unsubscribe;
     const getInfo = () => {
       Promise.all([
         api.rpc.system.chain(),
@@ -24,8 +24,8 @@ export default function NodeInfo(props) {
     }
     getInfo()
 
-    return ()=> unsubscribe && unsubscribe();
-  },[api.rpc.system]);
+    // return ()=> unsubscribe && unsubscribe();
+  },[]);
   
   return (
     <>

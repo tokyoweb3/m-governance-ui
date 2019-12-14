@@ -18,7 +18,7 @@ export default function VoteListings (props) {
     .catch(console.error);
 
     return () => unsubscribe && unsubscribe();
-  }, [api.query.governanceModule, setVotes])
+  }, [api.query.governanceModule.createVote])
 
   useEffect(() => {
     let unsubscribeAll;
@@ -45,7 +45,7 @@ export default function VoteListings (props) {
       .catch(console.error);
 
     return () => unsubscribeAll && unsubscribeAll();
-  }, [voteCountState, api.query.governanceModule]);
+  }, [voteCountState]);
   
   const typeOfVote = (vote_type) => {
     switch(vote_type) {
