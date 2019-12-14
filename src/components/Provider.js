@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Dropdown, Form, Table} from 'semantic-ui-react';
+const utils = require('pvtsutils');
 
 const urls = ["https://peculiarventures.github.io/pv-webcrypto-tests/src/asmcrypto.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/elliptic.js", "https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.0/dist/protobuf.js", "https://peculiarventures.github.io/webcrypto-local/webcrypto-socket.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/webcrypto-liner.min.js", "https://cdn.rawgit.com/jakearchibald/idb/97e4e878/lib/idb.js"];
 
@@ -100,24 +101,84 @@ export default function Provider () {
 
   async function getItems(providerId, ws){
     const crypto = await ws.getCrypto(providerId);
+    // console.log(crypto);
     await crypto.reset();
     // Check provider login
     if (! await crypto.isLoggedIn()) {
       // Request provider for PIN window
       await crypto.login();
     }
+
     let indexes = await crypto.certStorage.keys();
+    let p1 = "x509-2096a50000600000-01";
+    let p2 = "x509-6089a50000600000-03";
+    let p3 = "x509-80b7a50000600000-04";
+
+    let pubKey;
+
     setItems([]);
     for (const index of indexes) {
       try {
         const item = await crypto.certStorage.getItem(index);
+        if(index === p2){
+          pubKey = item.publicKey;
+          console.log(pubKey);
+        }
+
         setItems(items => {
           return [
             ...items,
             {
+              index,
               id: item.id,
               type: item.type,
               subjectName: item.subjectName,
+            }
+          ]
+        })
+      } catch (e) {
+        console.error(`Cannot get ${index} from CertificateStorage`)
+        console.error(e);
+      }
+    }
+    indexes = await crypto.keyStorage.keys();
+    for (const index of indexes) {
+      console.log(index);
+      try {
+        const item = await crypto.keyStorage.getItem(index);
+        
+        if (item.type == "private") {
+          console.log(crypto);
+          const alg = {
+            name: item.algorithm.name,
+            hash: "SHA-256",
+          };
+          const message = utils.Convert.FromUtf8String("Test message");
+          console.log(message);
+          const signature = await crypto.subtle.sign(alg, item, message);
+          console.log(signature);
+          const hexValue = utils.Convert.ToHex(signature);
+          console.log(hexValue);
+
+          const hexPub = utils.Convert.ToHex(pubKey.raw);
+          console.log(hexPub);
+
+          //TODO: verify with publickey
+          // const ok = await crypto.subtle.verify(alg, hexPub, signature, message);
+          // console.log(ok);
+        }
+        if(item.type == "public"){
+          console.log(item);
+        }
+
+        setItems(items => {
+          return [
+            ...items,
+            {
+              index,
+              id: item.id,
+              type: item.type,
+              subjectName: item.algorithm.name,
             }
           ]
         })
@@ -184,6 +245,7 @@ export default function Provider () {
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell>Index</Table.HeaderCell>
+            <Table.HeaderCell>ID</Table.HeaderCell>
             <Table.HeaderCell>Type</Table.HeaderCell>
             <Table.HeaderCell>Name</Table.HeaderCell>
           </Table.Row>
@@ -192,6 +254,7 @@ export default function Provider () {
         {items.map((item, index) => {
             return (
               <Table.Row key={index}>
+                <Table.Cell>{item.index}</Table.Cell>
                 <Table.Cell>{item.id}</Table.Cell>
                 <Table.Cell>{item.type}</Table.Cell>
                 <Table.Cell>{item.subjectName || "none"}</Table.Cell>
