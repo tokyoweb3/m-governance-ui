@@ -9,9 +9,13 @@ export default function Sign () {
   const [signature, setSignature] = useState({value: ""});
   const [sign, setSign] = useState({ disabled:false });
   const [verification, setVerification] = useState({textContent: ""});
-  const initialState = {
-
-  };
+  const initialOption = [
+    {
+    key: "None",
+    value: "None",
+    text: "None"}
+  ];
+  const initialState = {};
   const [formState, setFormState] = useState(initialState);
   const [providers, setProviders] = useState([]);
   const [certificates, setCertificates ] = useState([]);
@@ -30,6 +34,78 @@ export default function Sign () {
     console.log("handle sign");
   };
 
+  async function main() {
+    const WebcryptoSocket = window.WebcryptoSocket;
+    let ws = new WebcryptoSocket.SocketProvider();
+    // let ws = new WebcryptoSocket.SocketProvider({
+    //   storage: await WebcryptoSocket.BrowserStorage.create(),
+    // });
+    const updateProvider = () => {
+      ws.info()
+          .then(function(info) {
+              // print info about each provider
+              for (var i=0; i < info.providers.length; i++) {
+                  var provider = info.providers[i];
+                  console.log(provider);
+              }
+              // get first provider
+              return ws.getCrypto(provider.id);
+          })
+          .then(function(crypto){
+            console.log(crypto);
+          });
+    }
+    ws.connect("127.0.0.1:31337")
+      .on("error", function (e) {
+        console.error(e);
+      })
+      .on("listening", async (e) => {
+        // Check if end-to-end session is approved
+        if (! await ws.isLoggedIn()) {
+          const pin = await ws.challenge();
+          // show PIN
+          setTimeout(() => {
+            alert("2key session PIN:" + pin);
+          }, 100)
+          // ask to approve session
+          await ws.login();
+        }
+      
+        ws.info()
+          .then(function(info) {
+              // print info about each provider
+              for (var i=0; i < info.providers.length; i++) {
+                  var provider = info.providers[i];
+                  setProviders([
+                    ...providers,
+                    {
+                      key: provider.id,
+                      value: provider.id,
+                      // atr: provider.atr,
+                      text: provider.name
+                    }
+                  ]);
+                  console.log(provider);
+              }
+  
+              // get first provider
+              return ws.getCrypto(provider.id);
+          })
+          .then(function(crypto){
+  
+            console.log(crypto);
+  
+          });
+          
+        ws.cardReader
+          .on("insert", updateProvider)
+          .on("remove", updateProvider);
+        // await FillData();
+        // ws.cardReader
+        //   .on("insert", updateProvider)
+        //   .on("remove", updateProvider);
+      });
+  }
   useEffect(() => { 
     for (const id in urls) {
       let tag = document.createElement('script');
@@ -73,6 +149,7 @@ export default function Sign () {
 
   return(
     <>
+      <h2>Signing with a key via Fortify</h2>
       <Form>
         <Form.Field>
           <Dropdown
@@ -83,7 +160,7 @@ export default function Sign () {
               search
               selection
               state='providers'
-              options={providers}
+              options={providers.length>0 ? providers : initialOption}
           />
           </Form.Field>
           <Form.Field>
@@ -106,7 +183,7 @@ export default function Sign () {
               type='string'
           />
           </Form.Field>
-          Verification: 
+          <h3>Verification:</h3>
           <Form.Field>
           <Button
               onClick={handleSign}
@@ -119,60 +196,6 @@ export default function Sign () {
       </Form>
     </>
   );
-}
-
-function load(url) {
-  let tag = document.createElement('script');
-    tag.async = false;
-    tag.src = url;
-    let body = document.getElementsByTagName('body')[0];
-    body.appendChild(tag);
-}
-
-async function main() {
-  const WebcryptoSocket = window.WebcryptoSocket;
-  let ws = new WebcryptoSocket.SocketProvider();
-  // let ws = new WebcryptoSocket.SocketProvider({
-  //   storage: await WebcryptoSocket.BrowserStorage.create(),
-  // });
-
-  ws.connect("127.0.0.1:31337")
-    .on("error", function (e) {
-      console.error(e);
-    })
-    .on("listening", async (e) => {
-      // Check if end-to-end session is approved
-      if (! await ws.isLoggedIn()) {
-        const pin = await ws.challenge();
-        // show PIN
-        setTimeout(() => {
-          alert("2key session PIN:" + pin);
-        }, 100)
-        // ask to approve session
-        await ws.login();
-      }
-    
-      ws.info()
-        .then(function(info) {
-            // print info about each provider
-            for (var i=0; i < info.providers.length; i++) {
-                var provider = info.providers[i];
-                // console.log(provider);
-            }
-
-            // get first provider
-            return ws.getCrypto(provider.id);
-        })
-        .then(function(crypto){
-
-          // console.log(crypto);
-
-        });
-      // await FillData();
-      // ws.cardReader
-      //   .on("insert", updateProvider)
-      //   .on("remove", updateProvider);
-    });
 }
 
 // async function updateProvider() {
