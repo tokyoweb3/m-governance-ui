@@ -4,8 +4,7 @@ const utils = require('pvtsutils');
 
 const urls = ["https://peculiarventures.github.io/pv-webcrypto-tests/src/asmcrypto.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/elliptic.js", "https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.0/dist/protobuf.js", "https://peculiarventures.github.io/webcrypto-local/webcrypto-socket.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/webcrypto-liner.min.js", "https://cdn.rawgit.com/jakearchibald/idb/97e4e878/lib/idb.js"];
 
-export default function Provider () {
-  const [webS, setWebS] = useState();
+export default function Provider ({ws}) {
   const initialOption = [
     {
     key: "None",
@@ -33,31 +32,17 @@ export default function Provider () {
     setSelectedProvider(provider.value);
   }
 
-  useEffect(() => { 
-    for (const id in urls) {
-      let tag = document.createElement('script');
-      tag.async = false;
-      tag.src = urls[id];
-      let body = document.getElementsByTagName('body')[0];
-      body.appendChild(tag);
-    }
-  },[]); 
-
-  // initialize webcryptosocket
   useEffect(() => {
-    window.WebcryptoSocket && main();
-  }, [window.WebcryptoSocket])
+    main();
+  }, [])
 
   const refresh = async () => {
     if(selectedProvider) {
-      getItems(selectedProvider, webS);
+      getItems(selectedProvider);
     }
   }
 
   async function main() {
-    const WebcryptoSocket = window.WebcryptoSocket;
-    const ws = new WebcryptoSocket.SocketProvider();
-    setWebS(ws);
     ws.connect("127.0.0.1:31337")
       .on("error", function (e) {
         console.error(e);
@@ -80,10 +65,10 @@ export default function Provider () {
         // ws.cardReader
         //   .on("insert", fillProviders(ws))
         //   .on("remove", fillProviders(ws));
-      });
+    });
   }
 
-  const fillProviders = async (ws) => {
+  const fillProviders = async() => {
     ws.info()
       .then(info => {
         for (const index in info.providers){
@@ -110,7 +95,7 @@ export default function Provider () {
       });
   }
 
-  async function getItems(providerId, ws){
+  async function getItems(providerId){
     const crypto = await ws.getCrypto(providerId);
     // console.log(crypto);
     await crypto.reset();
@@ -174,7 +159,6 @@ export default function Provider () {
             ]
           });
         }
-
         setItems(items => {
           return [
             ...items,

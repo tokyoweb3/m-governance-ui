@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Dropdown, Form, Input } from 'semantic-ui-react';
 import Sign from './Sign.js';
 import Provider from './Provider.js';
+
+const urls = ["https://peculiarventures.github.io/pv-webcrypto-tests/src/asmcrypto.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/elliptic.js", "https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.0/dist/protobuf.js", "https://peculiarventures.github.io/webcrypto-local/webcrypto-socket.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/webcrypto-liner.min.js", "https://cdn.rawgit.com/jakearchibald/idb/97e4e878/lib/idb.js"];
 
 export default function Certificate (props) {
   const { api, keyring } = props;
@@ -49,9 +51,41 @@ export default function Certificate (props) {
     });
   }
 
+  const [ws, setWs] = useState();
+  const [wsReady, setWsReady] = useState(false);
+
+  // load libs
+  useEffect(() => { 
+    for (const id in urls) {
+      let tag = document.createElement('script');
+      tag.async = false;
+      tag.src = urls[id];
+      let body = document.getElementsByTagName('body')[0];
+      body.appendChild(tag);
+    }
+  },[]); 
+
+  // get ws
+  useEffect(() => {
+    window.WebcryptoSocket && init();
+  }, [window.WebcryptoSocket])
+
+  const init = async () => {
+    const WebcryptoSocket = window.WebcryptoSocket;
+    const ws = new WebcryptoSocket.SocketProvider();
+    setWs(ws);
+    setWsReady(true);
+  }
+
+  if(!wsReady){
+    return <h2>Connecting to WebcryptoSocket...</h2>
+  }
+  // pass it to provider
+  
+
   return(
     <>
-      <Provider />
+      <Provider ws={ws}/>
       <h1>Certificate</h1>
       <Form>
                 <Form.Field>
