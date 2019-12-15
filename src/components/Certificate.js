@@ -1,58 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dropdown, Form, Input } from 'semantic-ui-react';
-import Sign from './Sign.js';
+import {Loader, Dimmer, Segment, Image} from 'semantic-ui-react';
+
+// import components
 import Provider from './Provider.js';
+import Register from './Register.js';
 
 const urls = ["https://peculiarventures.github.io/pv-webcrypto-tests/src/asmcrypto.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/elliptic.js", "https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.0/dist/protobuf.js", "https://peculiarventures.github.io/webcrypto-local/webcrypto-socket.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/webcrypto-liner.min.js", "https://cdn.rawgit.com/jakearchibald/idb/97e4e878/lib/idb.js"];
 
 export default function Certificate (props) {
   const { api, keyring } = props;
-  const [status, setStatus] = useState('');
-  const initialState = {
-      addressFrom: '',
-      pubKey: '0x',
-      cert: '0x',
-      encryptedAccount: '0x',
-  };
-  const [formState, setFormState] = useState(initialState);
-  const { addressFrom, pubKey, cert, encryptedAccount } = formState;
-
-  const keyringOptions = keyring.getPairs().map((account) => ({
-      key: account.address,
-      value: account.address,
-      text: account.meta.name.toUpperCase()
-  }));
-
-  const onChange = (_, data) => {
-      setFormState(FormState => {
-        return {
-          ...FormState,
-          [data.state]: data.value
-        };
-      });
-  }
-
-  const registerAccount = () => {
-    const fromPair = keyring.getPair(addressFrom);
-
-    setStatus('Sending...');
-
-    api.tx.myNumberModule
-    .registerAccount(pubKey, cert, encryptedAccount)
-    .signAndSend(fromPair, ({status}) => {
-        if (status.isFinalized) {
-        setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
-        } else {
-        setStatus(`Current transfer status: ${status.type}`);
-        }
-    }).catch((e) => {
-        setStatus(':( transaction failed');
-        console.error('ERROR:', e);
-    });
-  }
-
   const [ws, setWs] = useState();
   const [wsReady, setWsReady] = useState(false);
+  const [providerOptions, setProviderOptions] = useState([]);
+  const [providers, setProviders] = useState([]);
 
   // load libs
   useEffect(() => { 
@@ -65,86 +25,91 @@ export default function Certificate (props) {
     }
   },[]); 
 
-  // get ws
+  // get webcryptosocket
   useEffect(() => {
     window.WebcryptoSocket && init();
   }, [window.WebcryptoSocket])
 
-  const init = async () => {
+  const init = () => {
     const WebcryptoSocket = window.WebcryptoSocket;
     const ws = new WebcryptoSocket.SocketProvider();
     setWs(ws);
     setWsReady(true);
   }
+  const getProviders = async() => {
+    ws.info()
+      .then(info => {
+        for (const index in info.providers){
+          setProviderOptions(oldValues => {
+            const newValues = [...oldValues];
+            newValues[index] = {
+              key: info.providers[index].id,
+              value: info.providers[index].id,
+              text: info.providers[index].name
+            };
+            return newValues;
+          });
+
+          setProviders(oldValues => {
+            const newValues = [...oldValues];
+            newValues[index] =  {
+              id: info.providers[index].id,
+              name: info.providers[index].name,
+              atr: info.providers[index].atr || "None"
+            };
+            return newValues;
+          });
+        }
+      });
+  }
+
+  const main = async() => {
+    ws.connect("127.0.0.1:31337")
+    .on("error", function (e) {
+      console.error(e);
+    })
+    .on("listening", async (e) => {
+      // Check if end-to-end session is approved
+      if (! await ws.isLoggedIn()) {
+        const pin = await ws.challenge();
+        // show PIN
+        setTimeout(() => {
+          alert("2key session PIN:" + pin);
+        }, 100)
+        // ask to approve session
+        await ws.login();
+      }
+      await getProviders();
+    }); 
+  }
+
+
+  useEffect(() => {
+    if(wsReady){
+      main();
+    }
+  }, [wsReady]);
+
 
   if(!wsReady){
-    return <h2>Connecting to WebcryptoSocket...</h2>
+    return (
+      <Segment>
+      <Dimmer active inverted>
+        <Loader size='large'>Connecting to WebcryptoSocket.
+        Please install Fortify to use this feature!
+        </Loader>
+        
+      </Dimmer>
+
+      <Image src='https://react.semantic-ui.com/images/wireframe/paragraph.png' />
+      </Segment>
+    );
   }
-  // pass it to provider
-  
 
   return(
     <>
+      <Register api={api} keyring={keyring} ws={ws} providerOptions={providerOptions}/>     
       <Provider ws={ws}/>
-      <h1>Certificate</h1>
-      <Form>
-                <Form.Field>
-                <Dropdown
-                    placeholder='Select from your accounts'
-                    fluid
-                    label="From"
-                    onChange={onChange}
-                    search
-                    selection
-                    state='addressFrom'
-                    options={keyringOptions}
-                />
-                </Form.Field>
-                <Form.Field>
-                <Input
-                    label='Public Key'
-                    fluid
-                    onChange={onChange}
-                    state='pubKey'
-                    placeholder="0x...Public Key"
-                    type='hex'
-                />
-                </Form.Field>
-                <Form.Field>
-                <Input
-                    label='Certification'
-                    fluid
-                    onChange={onChange}
-                    state='cert'
-                    placeholder="0x...Certification hash≈"
-                    type='text'
-                />
-                </Form.Field>
-                <Form.Field>
-                <Input
-                    label='Encrypted Account'
-                    fluid
-                    onChange={onChange}
-                    state='encryptedAccount'
-                    placeholder="0x...Encrypted Account"
-                    type='text'
-                />
-                </Form.Field>
-                <Form.Field>
-                <Button
-                    onClick={registerAccount}
-                    primary
-                    type='submit'
-                >
-                    Send
-                </Button>
-                {status}
-                </Form.Field>
-            </Form>
-        
-        
-        {/* <Sign /> */}
-        
     </>
   );
 }

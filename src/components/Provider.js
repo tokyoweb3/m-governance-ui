@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Button, Dropdown, Form, Table} from 'semantic-ui-react';
 const utils = require('pvtsutils');
 
-const urls = ["https://peculiarventures.github.io/pv-webcrypto-tests/src/asmcrypto.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/elliptic.js", "https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.0/dist/protobuf.js", "https://peculiarventures.github.io/webcrypto-local/webcrypto-socket.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/webcrypto-liner.min.js", "https://cdn.rawgit.com/jakearchibald/idb/97e4e878/lib/idb.js"];
-
 export default function Provider ({ws}) {
   const initialOption = [
     {
@@ -60,7 +58,7 @@ export default function Provider ({ws}) {
         }
         await fillProviders(ws);
         if(selectedProvider){
-          await getItems(selectedProvider, ws);
+          await getItems(selectedProvider);
         }
         // ws.cardReader
         //   .on("insert", fillProviders(ws))
