@@ -5,18 +5,29 @@ const utils = require('pvtsutils');
 const urls = ["https://peculiarventures.github.io/pv-webcrypto-tests/src/asmcrypto.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/elliptic.js", "https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.0/dist/protobuf.js", "https://peculiarventures.github.io/webcrypto-local/webcrypto-socket.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/webcrypto-liner.min.js", "https://cdn.rawgit.com/jakearchibald/idb/97e4e878/lib/idb.js"];
 
 export default function Provider () {
+  const [webS, setWebS] = useState();
   const initialOption = [
     {
     key: "None",
     value: "None",
     text: "None"}
   ];
-  
+  const initialForm = {
+    alg: { 
+      name: "",
+      hash: "SHA-256",
+    },
+    message: "",
+    key: ""
+  };
   const [selectedProvider, setSelectedProvider] = useState("");
   const [providerOptions, setProviderOptions] = useState([]);
   const [providers, setProviders] = useState([]);
   const [items, setItems ] = useState([]);
-  const [webS, setWebS] = useState();
+  
+  const [publicKeys, setPublicKeys] = useState([]);
+  const [privateKeys, setPrivateKeys] = useState([]);
+  const [signForm, setSignForm] = useState(initialForm);
 
   const onChange = (_, provider) => {
     setSelectedProvider(provider.value);
@@ -110,19 +121,20 @@ export default function Provider () {
     }
 
     let indexes = await crypto.certStorage.keys();
-    let p1 = "x509-2096a50000600000-01";
-    let p2 = "x509-6089a50000600000-03";
-    let p3 = "x509-80b7a50000600000-04";
 
     let pubKey;
 
     setItems([]);
+    // get certification
     for (const index of indexes) {
       try {
         const item = await crypto.certStorage.getItem(index);
-        if(index === p2){
+        console.log(item);
+        // console.log(item.publicKey);
+        console.log(utils.Convert.ToHex(item.publicKey.raw));
+
+        if(index === indexes[1]){
           pubKey = item.publicKey;
-          console.log(pubKey);
         }
 
         setItems(items => {
@@ -141,34 +153,26 @@ export default function Provider () {
         console.error(e);
       }
     }
+
+    // get keys
     indexes = await crypto.keyStorage.keys();
     for (const index of indexes) {
-      console.log(index);
       try {
         const item = await crypto.keyStorage.getItem(index);
-        
-        if (item.type == "private") {
-          console.log(crypto);
-          const alg = {
-            name: item.algorithm.name,
-            hash: "SHA-256",
-          };
-          const message = utils.Convert.FromUtf8String("Test message");
-          console.log(message);
-          const signature = await crypto.subtle.sign(alg, item, message);
-          console.log(signature);
-          const hexValue = utils.Convert.ToHex(signature);
-          console.log(hexValue);
-
-          const hexPub = utils.Convert.ToHex(pubKey.raw);
-          console.log(hexPub);
-
-          //TODO: verify with publickey
-          // const ok = await crypto.subtle.verify(alg, hexPub, signature, message);
-          // console.log(ok);
-        }
-        if(item.type == "public"){
-          console.log(item);
+        if (item.type === "private") {
+          setPrivateKeys(keys => {
+            return[
+              ...keys,
+              item
+            ]
+          });
+        } else {
+          setPublicKeys(keys => {
+            return[
+              ...keys,
+              item
+            ]
+          });
         }
 
         setItems(items => {
@@ -188,6 +192,34 @@ export default function Provider () {
       }
     }
   }
+
+  const sign = async() => {
+    const {alg, key, message} = signForm;
+    const privateKey = privateKeys[0];
+    // const message = utils.Convert.FromUtf8String("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d");
+    const signature = await crypto.subtle.sign(alg, key, message);
+    const hexValue = utils.Convert.ToHex(signature);
+    console.log("Signed!");
+  }
+
+  // const verify = async() => {
+  //   //TODO: verify with publickey
+  //   // signature = await crypto.subtle.sign(alg, privateKey, message);
+  //   // console.log(signature);
+  //   for (const index in publicKeys) {
+  //     try{
+  //       alg = {
+  //         name: publicKeys[index].algorithm.name,
+  //         hash: "SHA-256",
+  //       }
+  //       const ok = await crypto.subtle.verify(alg, publicKeys[index], signature, message);
+  //       console.log(ok);
+  //     }
+  //     catch (e){
+  //       console.error(e);
+  //     }
+  //   }
+  // }
 
   return(
     <>

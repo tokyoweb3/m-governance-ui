@@ -51,6 +51,7 @@ export default function Certificate (props) {
 
   return(
     <>
+      <Provider />
       <h1>Certificate</h1>
       <Form>
                 <Form.Field>
@@ -107,7 +108,7 @@ export default function Certificate (props) {
                 </Form.Field>
             </Form>
         
-        <Provider />
+        
         {/* <Sign /> */}
         
     </>
