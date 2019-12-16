@@ -13,16 +13,17 @@ export default function Register ({api, keyring, ws, providerOptions}) {
 
   const initialState = {
       addressFrom: '',
-      privateKey: {},
-      pubKey: '',
-      cert: '',
+      publicKeyIndex: '',
+      certificateIndex: '',
       encryptedAccount: '',
+      privateKeyIndex: '',
   };
   const [formState, setFormState] = useState(initialState);
-  const { addressFrom, privateKeyIndex, pubKey, cert, encryptedAccount } = formState;
+  const { addressFrom, encryptedAccount, privateKeyIndex, publicKeyIndex, certificateIndex } = formState;
 
   const [privateKeyOptions, setPrivateKeyOptions] = useState([]);
   const [publicKeyOptions, setPublicKeyOptions] = useState([]);
+  const [certificateOptions, setCertificateOptions] = useState([]);
 
   const [selectedProvider, setSelectedProvider] = useState();
 
@@ -37,30 +38,34 @@ export default function Register ({api, keyring, ws, providerOptions}) {
   }
   const onChangeProvider = async (_, data) => {
     setSelectedProvider(data.value);
-    getPrivateKey(data.value);
+    getItems(data.value);
   }
 
   const signAccount = async () => {
-    const crypto = await ws.getCrypto(selectedProvider);
-    const privateKey = await crypto.keyStorage.getItem(privateKeyIndex);
-    const alg = {
-      name: privateKey.algorithm.name || "RSASSA-PKCS1-v1_5",
-      hash: "SHA-256"
-    };
-    const message = utils.Convert.FromUtf8String(addressFrom);
-    const signature = await crypto.subtle.sign(alg, privateKey, message);
-    const hexValue = utils.Convert.ToHex(signature);
-    console.log(alg);
-    setFormState(formState=>{
-      return{
-        ...formState,
-        encryptedAccount: hexValue
+    try{
+      const crypto = await ws.getCrypto(selectedProvider);
+      const privateKey = await crypto.keyStorage.getItem(privateKeyIndex);
+      console.log(privateKey);
+      const alg = {
+        name: privateKey.algorithm.name || "RSASSA-PKCS1-v1_5",
+        hash: "SHA-256"
       };
-    });
-    console.log(hexValue);
+      const message = utils.Convert.FromUtf8String(addressFrom);
+      const signature = await crypto.subtle.sign(alg, privateKey, message);
+      const hexValue = utils.Convert.ToHex(signature);
+      setFormState(formState=>{
+        return{
+          ...formState,
+          encryptedAccount: hexValue
+        };
+      });
+      console.log(hexValue);
+      }
+      catch(e){console.error(e)};
   }
+  
 
-  const getPrivateKey = async(providerId) => {
+  const getItems = async(providerId) => {
     const crypto = await ws.getCrypto(providerId);
     await crypto.reset();
 
@@ -68,8 +73,9 @@ export default function Register ({api, keyring, ws, providerOptions}) {
       await crypto.login();
     }
 
-    const indexes = await crypto.keyStorage.keys();
+    let indexes = await crypto.keyStorage.keys();
     setPrivateKeyOptions([]);
+    setPublicKeyOptions([]);
     for (const index of indexes) {
       try {
         const item = await crypto.keyStorage.getItem(index);
@@ -84,7 +90,39 @@ export default function Register ({api, keyring, ws, providerOptions}) {
               }
             ]
           });
-        } 
+        } else if(item.type === "public"){
+          setPublicKeyOptions(publicKeyOptions => {
+            return[
+              ...publicKeyOptions,
+              {
+                key: index,
+                value: index,
+                text: `${index}: ${item.id}`
+              }
+            ]
+          });
+        }
+      } catch (e) {
+        console.error(`Cannot get ${index} from CertificateStorage`)
+        console.error(e);
+      }
+    }
+
+    indexes = await crypto.certStorage.keys();
+    setCertificateOptions([]);
+    for (const index of indexes) {
+      try {
+        const item = await crypto.keyStorage.getItem(index);
+          setCertificateOptions(certificateOptions => {
+            return[
+              ...certificateOptions,
+              {
+                key: index,
+                value: index,
+                text: `${index}`
+              }
+            ]
+          });
       } catch (e) {
         console.error(`Cannot get ${index} from CertificateStorage`)
         console.error(e);
@@ -109,18 +147,23 @@ export default function Register ({api, keyring, ws, providerOptions}) {
           await ws.login();
         }
         if(selectedProvider){
-          await getPrivateKey(selectedProvider);
+          await getItems(selectedProvider);
         }
     });
   }
 
-  const registerAccount = () => {
+    const registerAccount = async () => {
     const fromPair = keyring.getPair(addressFrom);
+    const crypto = await ws.getCrypto(selectedProvider);
+    const publicKey = await crypto.keyStorage.getItem(publicKeyIndex);
 
+    const cert = await crypto.certStorage.getItem(certificateIndex);
+    const raw = await crypto.certStorage.exportCert("raw", cert);
+    const thumbprint = await crypto.subtle.digest("SHA-1", raw);
     setStatus('Sending...');
 
     api.tx.myNumberModule
-    .registerAccount(pubKey, cert, encryptedAccount)
+    .registerAccount(publicKey, thumbprint, encryptedAccount)
     .signAndSend(fromPair, ({status}) => {
         if (status.isFinalized) {
         setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
@@ -140,10 +183,20 @@ export default function Register ({api, keyring, ws, providerOptions}) {
   const lineMaker = (str) =>{
     return str.replace(/(.{100})/g, "$1 ");
   }
+  const spaceMaker = (str) =>{
+    return str.replace(/(.{2})(.{100})/g, "$1 ", "$2\n");
+  }
   
   return(
     <>  
       <h1>Register</h1>
+      <h3>Requirements:</h3>
+      <ul>
+        <li>Account: {formState.addressFrom || "None"}</li>
+        <li>Signed Account: {formState.encryptedAccount || "None"}</li>
+        <li>PublicKey: {formState.publicKeyIndex || "None"}</li>
+        <li>Certification: {formState.certificateIndex || "None"}</li>
+      </ul>
       <h2>Sign your Account</h2>
       <Form>
             <Form.Field>
@@ -200,26 +253,29 @@ export default function Register ({api, keyring, ws, providerOptions}) {
 
       <Form>
               <Form.Field>
-              <Input
-                  label='Public Key'
+              <Dropdown
+                  placeholder='Select from your public keys'
                   fluid
+                  label="PublicKeyOptions"
                   onChange={onChange}
-                  state='pubKey'
-                  placeholder="0x...Public Key"
-                  type='hex'
+                  search
+                  selection
+                  state='publicKeyIndex'
+                  options={publicKeyOptions}
               />
-              </Form.Field>
+            </Form.Field>
               <Form.Field>
-              <Input
-                  label='Certification'
+              <Dropdown
+                  placeholder='Select from your certificates'
                   fluid
+                  label="CertificatesOptions"
                   onChange={onChange}
-                  state='cert'
-                  placeholder="0x...Certification hash≈"
-                  type='text'
+                  search
+                  selection
+                  state='certificateIndex'
+                  options={certificateOptions}
               />
-              </Form.Field>
-          
+            </Form.Field>
               <Form.Field>
               <Button
                   onClick={registerAccount}
@@ -234,4 +290,4 @@ export default function Register ({api, keyring, ws, providerOptions}) {
           </Form>
     </>
   );
-}
+} 

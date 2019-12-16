@@ -69,7 +69,6 @@ export default function Provider ({ws}) {
   const fillProviders = async() => {
     ws.info()
       .then(info => {
-        console.log(info);
         for (const index in info.providers){
           setProviderOptions(oldValues => {
             const newValues = [...oldValues];
@@ -209,31 +208,39 @@ export default function Provider ({ws}) {
       await crypto.login();
     }
     let cert = await crypto.certStorage.getItem(certIndex);
-    let certObj={
-      id: cert.id,
-      issuerName: cert.issuerName,
-      serialNumber: cert.serialNumber,
-      version: cert.version,
-      providerID: cert.providerID,
-      notAfter: cert.notAfter,
-      notBefore: cert.notBefore,
-      subjectName: cert.subjectName,
-      type: cert.type,
-      publicKey:{
-        algorithm: cert.publicKey.algorithm.name,
-        extractable: cert.publicKey.extractable,
-        id: cert.publicKey.id,
-        hex: utils.Convert.ToHex(cert.raw),
-      }
-    }
+    console.log(cert);
+    const raw = await crypto.certStorage.exportCert("PEM", cert);
+    // const thumbprint = await crypto.subtle.digest("SHA-1", raw);
+    console.log(raw);
+    // console.log(thumbprint);
 
-    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(certObj));
-    var downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href",     dataStr);
-    downloadAnchorNode.setAttribute("download", certIndex + ".json");
-    document.body.appendChild(downloadAnchorNode); // required for firefox
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+    // Download the certobject in json
+    
+    // let certObj={
+    //   id: cert.id,
+    //   issuerName: cert.issuerName,
+    //   serialNumber: cert.serialNumber,
+    //   version: cert.version,
+    //   providerID: cert.providerID,
+    //   notAfter: cert.notAfter,
+    //   notBefore: cert.notBefore,
+    //   subjectName: cert.subjectName,
+    //   type: cert.type,
+    //   publicKey:{
+    //     algorithm: cert.publicKey.algorithm.name,
+    //     extractable: cert.publicKey.extractable,
+    //     id: cert.publicKey.id,
+    //     hex: utils.Convert.ToHex(cert.raw),
+    //   }
+    // }
+
+    // var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(certObj));
+    // var downloadAnchorNode = document.createElement('a');
+    // downloadAnchorNode.setAttribute("href",     dataStr);
+    // downloadAnchorNode.setAttribute("download", certIndex + ".json");
+    // document.body.appendChild(downloadAnchorNode); // required for firefox
+    // downloadAnchorNode.click();
+    // downloadAnchorNode.remove();
   }
 
   return(
