@@ -44,12 +44,13 @@ export default function Register ({api, keyring, ws, providerOptions}) {
     const crypto = await ws.getCrypto(selectedProvider);
     const privateKey = await crypto.keyStorage.getItem(privateKeyIndex);
     const alg = {
-      name: privateKey.algorithm.name,
+      name: privateKey.algorithm.name || "RSASSA-PKCS1-v1_5",
       hash: "SHA-256"
     };
     const message = utils.Convert.FromUtf8String(addressFrom);
     const signature = await crypto.subtle.sign(alg, privateKey, message);
     const hexValue = utils.Convert.ToHex(signature);
+    console.log(alg);
     setFormState(formState=>{
       return{
         ...formState,

@@ -69,6 +69,7 @@ export default function Provider ({ws}) {
   const fillProviders = async() => {
     ws.info()
       .then(info => {
+        console.log(info);
         for (const index in info.providers){
           setProviderOptions(oldValues => {
             const newValues = [...oldValues];
@@ -112,9 +113,6 @@ export default function Provider ({ws}) {
     for (const index of indexes) {
       try {
         const item = await crypto.certStorage.getItem(index);
-        console.log(item);
-        // console.log(item.publicKey);
-        console.log(utils.Convert.ToHex(item.publicKey.raw));
 
         if(index === indexes[1]){
           pubKey = item.publicKey;
@@ -202,6 +200,41 @@ export default function Provider ({ws}) {
   //     }
   //   }
   // }
+  
+  async function downloadCert(e, certIndex){
+    e.preventDefault();
+    const crypto = await ws.getCrypto(selectedProvider);
+    // await crypto.reset();
+    if (! await crypto.isLoggedIn()) {
+      await crypto.login();
+    }
+    let cert = await crypto.certStorage.getItem(certIndex);
+    let certObj={
+      id: cert.id,
+      issuerName: cert.issuerName,
+      serialNumber: cert.serialNumber,
+      version: cert.version,
+      providerID: cert.providerID,
+      notAfter: cert.notAfter,
+      notBefore: cert.notBefore,
+      subjectName: cert.subjectName,
+      type: cert.type,
+      publicKey:{
+        algorithm: cert.publicKey.algorithm.name,
+        extractable: cert.publicKey.extractable,
+        id: cert.publicKey.id,
+        hex: utils.Convert.ToHex(cert.raw),
+      }
+    }
+
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(certObj));
+    var downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", certIndex + ".json");
+    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
 
   return(
     <>
@@ -268,7 +301,8 @@ export default function Provider ({ws}) {
         {items.map((item, index) => {
             return (
               <Table.Row key={index}>
-                <Table.Cell>{item.index}</Table.Cell>
+                <Table.Cell onClick={e => downloadCert(e, item.index)}>{item.index}
+                </Table.Cell>
                 <Table.Cell>{item.id}</Table.Cell>
                 <Table.Cell>{item.type}</Table.Cell>
                 <Table.Cell>{item.subjectName || "none"}</Table.Cell>
