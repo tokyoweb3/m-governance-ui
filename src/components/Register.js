@@ -15,11 +15,11 @@ export default function Register ({api, keyring, ws, providerOptions}) {
       addressFrom: '',
       publicKeyIndex: '',
       certificateIndex: '',
-      encryptedAccount: '',
+      hexThumbSignature: '',
       privateKeyIndex: '',
   };
   const [formState, setFormState] = useState(initialState);
-  const { addressFrom, encryptedAccount, privateKeyIndex, publicKeyIndex, certificateIndex } = formState;
+  const { addressFrom, hexThumbSignature, privateKeyIndex, publicKeyIndex, certificateIndex } = formState;
 
   const [privateKeyOptions, setPrivateKeyOptions] = useState([]);
   const [publicKeyOptions, setPublicKeyOptions] = useState([]);
@@ -51,15 +51,16 @@ export default function Register ({api, keyring, ws, providerOptions}) {
         hash: "SHA-256"
       };
       const message = utils.Convert.FromUtf8String(addressFrom);
-      const signature = await crypto.subtle.sign(alg, privateKey, message);
-      const hexValue = utils.Convert.ToHex(signature);
+      const rawSignature = await crypto.subtle.sign(alg, privateKey, message);
+      const thumbSignature = await crypto.subtle.digest("SHA-256", rawSignature);
+      const hexThumbSignature = utils.Convert.ToHex(thumbSignature);
       setFormState(formState=>{
         return{
           ...formState,
-          encryptedAccount: hexValue
+          hexThumbSignature
         };
       });
-      console.log(hexValue);
+      console.log(hexThumbSignature);
       }
       catch(e){console.error(e)};
   }
@@ -79,6 +80,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
     for (const index of indexes) {
       try {
         const item = await crypto.keyStorage.getItem(index);
+        console.log(item);
         if (item.type === "private") {
           setPrivateKeyOptions(privateKeyOptions => {
             return[
@@ -112,14 +114,15 @@ export default function Register ({api, keyring, ws, providerOptions}) {
     setCertificateOptions([]);
     for (const index of indexes) {
       try {
-        const item = await crypto.keyStorage.getItem(index);
+        const item = await crypto.certStorage.getItem(index);
+        console.log(item);
           setCertificateOptions(certificateOptions => {
             return[
               ...certificateOptions,
               {
                 key: index,
                 value: index,
-                text: `${index}`
+                text: `${GetCommonName(item.subjectName)}: ${index}`
               }
             ]
           });
@@ -156,14 +159,25 @@ export default function Register ({api, keyring, ws, providerOptions}) {
     const fromPair = keyring.getPair(addressFrom);
     const crypto = await ws.getCrypto(selectedProvider);
     const publicKey = await crypto.keyStorage.getItem(publicKeyIndex);
+    const rawPub = await crypto.subtle.exportKey("raw", publicKey);
 
     const cert = await crypto.certStorage.getItem(certificateIndex);
-    const raw = await crypto.certStorage.exportCert("raw", cert);
-    const thumbprint = await crypto.subtle.digest("SHA-1", raw);
+    const rawCert = await crypto.certStorage.exportCert("raw", cert);
+
+    const thumbPub = await crypto.subtle.digest("SHA-256", rawPub); // 32bytes: 256bits
+    const thumbCert = await crypto.subtle.digest("SHA-256", rawCert);
+    const hexThumbPub = utils.Convert.ToHex(thumbPub);
+    const hexThumbCert = utils.Convert.ToHex(thumbCert);
+    
+    // console.log(thumbPub);
+    console.log("hexThumbPub: ", hexThumbPub);
+    // console.log(thumbCert);
+    console.log("hexThumbPub: ", hexThumbCert);
+
     setStatus('Sending...');
 
     api.tx.myNumberModule
-    .registerAccount(publicKey, thumbprint, encryptedAccount)
+    .registerAccount(hexThumbPub, hexThumbCert, hexThumbSignature)
     .signAndSend(fromPair, ({status}) => {
         if (status.isFinalized) {
         setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
@@ -186,6 +200,12 @@ export default function Register ({api, keyring, ws, providerOptions}) {
   const spaceMaker = (str) =>{
     return str.replace(/(.{2})(.{100})/g, "$1 ", "$2\n");
   }
+  const canRegister = () => {
+    if(addressFrom && publicKeyIndex && certificateIndex && hexThumbSignature && privateKeyIndex){
+      return false;
+    } 
+    return false;
+  }
   
   return(
     <>  
@@ -193,7 +213,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
       <h3>Requirements:</h3>
       <ul>
         <li>Account: {formState.addressFrom || "None"}</li>
-        <li>Signed Account: {formState.encryptedAccount || "None"}</li>
+        <li>Signed Account: {formState.hexThumbSignature || "None"}</li>
         <li>PublicKey: {formState.publicKeyIndex || "None"}</li>
         <li>Certification: {formState.certificateIndex || "None"}</li>
       </ul>
@@ -247,7 +267,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
       </Form>
       <div style={{whiteSpace: 'pre-line'}}>
         <Header as='h3'>Signature: </Header>
-        {lineMaker(formState.encryptedAccount)}
+        {formState.hexThumbSignature}
       </div>
       <h2>Register your Account</h2>
 
@@ -280,7 +300,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
               <Button
                   onClick={registerAccount}
                   primary
-                  disabled={registerHidden}
+                  disabled={canRegister()}
                   type='submit'
               >
                   Register
@@ -291,3 +311,9 @@ export default function Register ({api, keyring, ws, providerOptions}) {
     </>
   );
 } 
+
+function GetCommonName(name) {
+  var reg = /CN=(.+),?/i;
+  var res = reg.exec(name);
+  return res ? res[1] : "Unknown";
+}

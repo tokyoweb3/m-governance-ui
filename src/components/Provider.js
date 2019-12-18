@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Dropdown, Form, Table} from 'semantic-ui-react';
+const jwkToPem = require('jwk-to-pem');
 const utils = require('pvtsutils');
 
 export default function Provider ({ws}) {
@@ -200,22 +201,38 @@ export default function Provider ({ws}) {
   //   }
   // }
   
-  async function downloadCert(e, certIndex){
+  async function downloadItem(e, index){
     e.preventDefault();
+    try{
     const crypto = await ws.getCrypto(selectedProvider);
     // await crypto.reset();
     if (! await crypto.isLoggedIn()) {
       await crypto.login();
     }
-    let cert = await crypto.certStorage.getItem(certIndex);
-    console.log(cert);
-    const raw = await crypto.certStorage.exportCert("PEM", cert);
+    const parts = index.split("-");
+    let item;
+    let pem;
+    let hex;
+    switch(parts[0]){
+      case "x509":
+        item = await crypto.certStorage.getItem(index);
+        pem = await crypto.certStorage.exportCert("PEM", item);
+        break;
+      case "public":
+        item = await crypto.keyStorage.getItem(index);
+        const jwk = await crypto.subtle.exportKey("jwk", item);
+        pem = jwkToPem(jwk);
+        hex = utils.Convert.ToHex(pem);
+        break;
+      default: break;
+    }
+    console.log(pem);
+    console.log(hex);
     // const thumbprint = await crypto.subtle.digest("SHA-1", raw);
-    console.log(raw);
     // console.log(thumbprint);
 
     // Download the certobject in json
-    
+
     // let certObj={
     //   id: cert.id,
     //   issuerName: cert.issuerName,
@@ -234,13 +251,14 @@ export default function Provider ({ws}) {
     //   }
     // }
 
-    // var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(certObj));
+    // var dataStr = "data:text/pem;charset=utf-8," + encodeURIComponent(pem);
     // var downloadAnchorNode = document.createElement('a');
     // downloadAnchorNode.setAttribute("href",     dataStr);
-    // downloadAnchorNode.setAttribute("download", certIndex + ".json");
+    // downloadAnchorNode.setAttribute("download", index + ".pem");
     // document.body.appendChild(downloadAnchorNode); // required for firefox
     // downloadAnchorNode.click();
     // downloadAnchorNode.remove();
+  }catch(e){console.error(e)}
   }
 
   return(
@@ -308,7 +326,7 @@ export default function Provider ({ws}) {
         {items.map((item, index) => {
             return (
               <Table.Row key={index}>
-                <Table.Cell onClick={e => downloadCert(e, item.index)}>{item.index}
+                <Table.Cell onClick={e => downloadItem(e, item.index)}>{item.index}
                 </Table.Cell>
                 <Table.Cell>{item.id}</Table.Cell>
                 <Table.Cell>{item.type}</Table.Cell>
