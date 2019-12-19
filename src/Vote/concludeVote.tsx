@@ -1,8 +1,22 @@
 import React, {useState, useEffect} from 'react';
-import { Button, Dropdown, Form } from 'semantic-ui-react';
+import { Button, Dropdown, Form, DropdownProps } from 'semantic-ui-react';
 
-export default function ConcludeVote(props) {
-  const { api, keyring, id, blockNumber, vote_ends, concluded } = props;
+interface Props {
+  api: {query: any, tx: any; };
+  keyring: {getPairs: any, getPair: any ;};
+  id: string;
+  blockNumber: number;
+  vote_ends: number;
+  concluded: string;
+}
+interface Status{
+  status: {
+    isFinalized: boolean,
+    asFinalized: string,
+    type: string
+  }
+}
+export default function ConcludeVote({ api, keyring, id, blockNumber, vote_ends, concluded } : Props) {
   const [status, setStatus] = useState('');
 
   // when all requirements are set true, clickable
@@ -11,7 +25,7 @@ export default function ConcludeVote(props) {
     isConcluded: false,
     isSelected: false
   };
-  const [clickable, setClickable] = useState({requirements});
+  const [clickable, setClickable] = useState(requirements);
   
   const { isExpired, isConcluded, isSelected } = clickable;
 
@@ -22,13 +36,13 @@ export default function ConcludeVote(props) {
   const [formState, setFormState] = useState(initialState);
   const { addressFrom, reference_id } = formState;
 
-  const keyringOptions = keyring.getPairs().map((account) => ({
+  const keyringOptions = keyring.getPairs().map((account: { address: any; meta: { name: string; }; }) => ({
       key: account.address,
       value: account.address,
       text: account.meta.name.toUpperCase()
   }));
 
-  const onChange = (_, data) => {
+  const onChange = (_: any, data:DropdownProps) => {
     setClickable(clickable => {
       return {
         ...clickable,
@@ -50,20 +64,20 @@ export default function ConcludeVote(props) {
 
     api.tx.governanceModule
     .concludeVote(reference_id)
-    .signAndSend(fromPair, ({status}) => {
+    .signAndSend(fromPair, ({status}: Status) => {
       if (status.isFinalized) {
         setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
         } else {
         setStatus(`Current transfer status: ${status.type}`);
         }
-    }).catch((e) => {
+    }).catch((e:any) => {
       setStatus(':( transaction failed');
       console.error('ERROR:', e);
     });
   }
 
   useEffect(() => {
-    let unsubscribe;
+    let unsubscribe: () => any;
     if (vote_ends < blockNumber) {
       setClickable(clickable => {
         return {
@@ -79,7 +93,7 @@ export default function ConcludeVote(props) {
   }, [blockNumber, isSelected, concluded, vote_ends])
   
   // TODO:refactor this
-  const isDisabled = (isConcluded, isSelected, isExpired) => {
+  const isDisabled = (isConcluded: boolean, isSelected:boolean, isExpired: boolean) => {
     if(!isConcluded && isSelected && isExpired) {
       return false;
     }

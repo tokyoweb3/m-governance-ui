@@ -7,12 +7,20 @@ import Register from './Register.js';
 
 const urls = ["https://peculiarventures.github.io/pv-webcrypto-tests/src/asmcrypto.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/elliptic.js", "https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.0/dist/protobuf.js", "https://peculiarventures.github.io/webcrypto-local/webcrypto-socket.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/webcrypto-liner.min.js", "https://cdn.rawgit.com/jakearchibald/idb/97e4e878/lib/idb.js"];
 
-export default function Certificate (props) {
-  const { api, keyring } = props;
+
+interface Props {
+  api: {query: any, tx: any; };
+  keyring: {getPairs: any, getPair: any ;};
+}
+interface MyWindow extends Window {  
+  WebcryptoSocket: any;
+}  
+declare var window: MyWindow;  
+
+export default function Certificate ({ api, keyring }: Props) {
   const [ws, setWs] = useState();
   const [wsReady, setWsReady] = useState(false);
-  const [providerOptions, setProviderOptions] = useState([]);
-  const [providers, setProviders] = useState([]);
+  const [providerOptions, setProviderOptions] = useState<{key:string, value: string, text: string}[]>([]);
 
   // load libs
   useEffect(() => { 
@@ -38,26 +46,17 @@ export default function Certificate (props) {
   }
   const getProviders = async() => {
     ws.info()
-      .then(info => {
+      .then((info: { providers: [{id: string; name: string}];}) => {
+        setProviderOptions([]);
         for (const index in info.providers){
           setProviderOptions(oldValues => {
-            const newValues = [...oldValues];
-            newValues[index] = {
+            return [
+            ...oldValues,
+            {
               key: info.providers[index].id,
               value: info.providers[index].id,
               text: info.providers[index].name
-            };
-            return newValues;
-          });
-
-          setProviders(oldValues => {
-            const newValues = [...oldValues];
-            newValues[index] =  {
-              id: info.providers[index].id,
-              name: info.providers[index].name,
-              atr: info.providers[index].atr || "None"
-            };
-            return newValues;
+            }]
           });
         }
       });
@@ -65,10 +64,10 @@ export default function Certificate (props) {
 
   const main = async() => {
     ws.connect("127.0.0.1:31337")
-    .on("error", function (e) {
+    .on("error", function (e: any) {
       console.error(e);
     })
-    .on("listening", async (e) => {
+    .on("listening", async (e: any) => {
       // Check if end-to-end session is approved
       if (! await ws.isLoggedIn()) {
         const pin = await ws.challenge();

@@ -115,7 +115,6 @@ export default function VoteListings ({api, blockNumber}: Props) {
 
         <Table.Body>
           {arrayState.map((id: number, index: number) => {
-            console.log(votes);
             return (
               <Table.Row key={id}>
                 <Table.Cell textAlign='right'><Link to={`/vote/${id}`}>{id}</Link>

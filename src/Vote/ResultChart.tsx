@@ -3,7 +3,7 @@ import {Doughnut} from 'react-chartjs-2';
 
 
 
-export default function ResultChart({aye, nay}){
+export default function ResultChart({aye, nay}: {aye:string[]; nay: string[]}){
   const data = {
     labels: [
       'Aye',

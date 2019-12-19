@@ -6,26 +6,49 @@ import CastBallot from './castBallot';
 import ConcludeVote from './concludeVote';
 import ResultChart from './ResultChart';
 
+interface Props {
+  api: any;
+  keyring: any;
+  blockNumber: string;
+}
+interface VoteState {
+  vote_type?: number;
+  approved?: string;
+  creator?: string;
+  vote_ends?: string 
+  when?: string
+  concluded?: string
+  hash?: string
+  aye?: string[]
+  nay?: string[]
+}
+interface VoteToString {
+  vote_type:  {toString: () => any};
+  approved: { toString: () => any};
+  creator: { toString: () => any};
+  when: { toString: () => any};
+  vote_ends: { toString: () => any};
+  concluded: { toString: () => any};
+}
+
 // Details about Vote of specific id
 // query: votesByIndex, voteResult, votedAccounts
 // tx: ballot, conclude, lockvote, withdraw
-export default function VoteView(props) {
-  const { api, keyring, blockNumber } = props;
+export default function VoteView({api, keyring, blockNumber}: Props) {
   const { id } = useParams();
-  const [voteState, setVoteState] = useState({});
+  const [voteState, setVoteState] = useState<VoteState>({});
   const { vote_type, approved, creator, vote_ends, when, concluded, hash, aye, nay } = voteState;
 
   // get vote, put it in voteState
   useEffect(() => {
-    let unsubscribe;
+    let unsubscribe: () => any;
     const f = async () => { await api.queryMulti([
       [api.query.governanceModule.votesByIndex, id],
       [api.query.governanceModule.voteIndexHash, id],
       [api.query.governanceModule.votedAccounts, [id, 0]],
       [api.query.governanceModule.votedAccounts, [id, 1]],
-    ], ([vote, hash, aye, nay]) => {
+    ], ([vote, hash, aye, nay]:[VoteToString, string, string[], string[]]) => {
       setVoteState({
-        id: vote.id.toString(), 
         vote_type: vote.vote_type.toString(),
         approved: vote.approved.toString(),
         creator: vote.creator.toString(),
@@ -38,25 +61,24 @@ export default function VoteView(props) {
       });
     });
     }
-    f().then(unsub => {
-      unsubscribe = unsub;
-    }).catch(console.error);
+    f().then((unsub: any) => {unsubscribe = unsub;})
+    .catch(console.error);
     
     return () => unsubscribe && unsubscribe();
   }, [ id ])
 
-  const typeOfVote = (vote_type) => {
+  const typeOfVote = (vote_type?: number) => {
     switch(vote_type) {
-      case '0': return "Vote";
-      case '1': return "LockVote";
+      case 0: return "Vote";
+      case 1: return "LockVote";
       default: return "Undefined Vote";
     }
   }
 
   return(
     <>    
-      <div style={{float:'left'}}><Link to={`/vote/${id-1}`}>Before</Link></div>
-      <div style={{paddingLeft: '20px', float:'left'}}><Link to={`/vote/${parseInt(id)+1}`}>Next</Link></div>
+      <div style={{float:'left'}}><Link to={`/vote/${parseInt(id!)-1}`}>Before</Link></div>
+      <div style={{paddingLeft: '20px', float:'left'}}><Link to={`/vote/${parseInt(id!)+1}`}>Next</Link></div>
 
       <h1 style={{clear:'both'}}>Vote#{id}</h1>
      
@@ -90,8 +112,8 @@ export default function VoteView(props) {
 
 
       <CastBallot api={api} keyring={keyring} id={id}/>
-      <ResultChart aye={aye} nay={nay}/>
-      <ConcludeVote api={api} keyring={keyring} id={id} vote_ends={parseInt(vote_ends)} concluded={concluded} blockNumber={parseInt(blockNumber)}/>
+      <ResultChart aye={aye!} nay={nay!}/>
+      <ConcludeVote api={api} keyring={keyring} id={id!} vote_ends={parseInt(vote_ends!)} concluded={concluded!} blockNumber={parseInt(blockNumber!)}/>
     </>
   );
 }

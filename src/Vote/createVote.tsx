@@ -1,8 +1,15 @@
 import React, {useState} from 'react';
-import { Button, Dropdown, Form, Input } from 'semantic-ui-react';
+import { Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData } from 'semantic-ui-react';
 
-export default function CreateVote(props) {
-    const { api, keyring } = props;
+interface Status{
+  status: {
+    isFinalized: boolean,
+    asFinalized: string,
+    type: string
+  }
+}
+
+export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
     const [status, setStatus] = useState('');
     const initialState = {
         addressFrom: '',
@@ -14,13 +21,13 @@ export default function CreateVote(props) {
     const [formState, setFormState] = useState(initialState);
     const { addressFrom, voteType, expLength, data, approved } = formState;
 
-    const keyringOptions = keyring.getPairs().map((account) => ({
+    const keyringOptions = keyring.getPairs().map((account: { address: any; meta: { name: string; }; }) => ({
         key: account.address,
         value: account.address,
         text: account.meta.name.toUpperCase()
     }));
 
-    const onChange = (_, data) => {
+    const onChange = (_: any, data: DropdownProps | InputOnChangeData) => {
         setFormState(FormState => {
           return {
             ...FormState,
@@ -36,13 +43,13 @@ export default function CreateVote(props) {
 
         api.tx.governanceModule
         .createVote(voteType, expLength, data, approved)
-        .signAndSend(fromPair, ({status}) => {
+        .signAndSend(fromPair, ({status}: Status) => {
             if (status.isFinalized) {
             setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
             } else {
             setStatus(`Current transfer status: ${status.type}`);
             }
-        }).catch((e) => {
+        }).catch((e:any) => {
             setStatus(':( transaction failed');
             console.error('ERROR:', e);
         });

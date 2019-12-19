@@ -21,12 +21,11 @@ const types ={
       "Nay"
     ]
   },
-  "Pubkey": "Vec<u8>",
   "Certification": {
-    "pubkey": "Pubkey",
+    "pubkey": "Hash",
     "cert": "Hash",
     "encrypted_account": "Hash"
   }
 }
 
-module.exports = types;
+export default types;

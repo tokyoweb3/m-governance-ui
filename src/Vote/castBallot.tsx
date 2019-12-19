@@ -1,8 +1,13 @@
 import React, {useState} from 'react';
-import { Button, Dropdown, Form } from 'semantic-ui-react';
+import { Button, Dropdown, Form, DropdownProps } from 'semantic-ui-react';
 
-export default function CastBallot(props) {
-  const { api, keyring, id } = props;
+interface Props {
+  api: any;
+  keyring: any;
+  id: string| undefined;
+}
+
+export default function CastBallot({api, keyring, id}: Props) {
   const [status, setStatus] = useState('');
   const initialState = {
     addressFrom: '',
@@ -15,13 +20,13 @@ export default function CastBallot(props) {
     {key: "Aye", value: "Aye", text: "Aye"},
     {key: "Nay", value: "Nay", text: "Nay"}
   ];
-  const keyringOptions = keyring.getPairs().map((account) => ({
+  const keyringOptions = keyring.getPairs().map((account:{address: string; meta:{name: string}}) => ({
       key: account.address,
       value: account.address,
       text: account.meta.name.toUpperCase()
   }));
 
-  const onChange = (_, data) => {
+  const onChange = (_: any, data: DropdownProps) => {
     setFormState(FormState => {
       return {
         ...FormState,
@@ -36,13 +41,13 @@ export default function CastBallot(props) {
 
     api.tx.governanceModule
     .castBallot(reference_id, ballot)
-    .signAndSend(fromPair, ({status}) => {
+    .signAndSend(fromPair, ({status}: {status:{isFinalized: boolean; asFinalized: string; type: string; }}) => {
       if (status.isFinalized) {
         setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
         } else {
         setStatus(`Current transfer status: ${status.type}`);
         }
-    }).catch((e) => {
+    }).catch((e: any) => {
       setStatus(':( transaction failed');
       console.error('ERROR:', e);
     });
