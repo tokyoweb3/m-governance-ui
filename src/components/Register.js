@@ -51,6 +51,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
         hash: "SHA-256"
       };
       const message = utils.Convert.FromUtf8String(addressFrom);
+      console.log(utils.Convert.ToHex(message));
       const rawSignature = await crypto.subtle.sign(alg, privateKey, message);
       const thumbSignature = await crypto.subtle.digest("SHA-256", rawSignature);
       const hexThumbSignature = utils.Convert.ToHex(thumbSignature);
@@ -60,7 +61,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
           hexThumbSignature
         };
       });
-      console.log(hexThumbSignature);
+      console.log(utils.Convert.ToHex(rawSignature));
       }
       catch(e){console.error(e)};
   }
@@ -80,7 +81,6 @@ export default function Register ({api, keyring, ws, providerOptions}) {
     for (const index of indexes) {
       try {
         const item = await crypto.keyStorage.getItem(index);
-        console.log(item);
         if (item.type === "private") {
           setPrivateKeyOptions(privateKeyOptions => {
             return[
@@ -115,7 +115,6 @@ export default function Register ({api, keyring, ws, providerOptions}) {
     for (const index of indexes) {
       try {
         const item = await crypto.certStorage.getItem(index);
-        console.log(item);
           setCertificateOptions(certificateOptions => {
             return[
               ...certificateOptions,
@@ -155,7 +154,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
     });
   }
 
-    const registerAccount = async () => {
+  const registerAccount = async () => {
     const fromPair = keyring.getPair(addressFrom);
     const crypto = await ws.getCrypto(selectedProvider);
     const publicKey = await crypto.keyStorage.getItem(publicKeyIndex);
@@ -163,13 +162,13 @@ export default function Register ({api, keyring, ws, providerOptions}) {
 
     const cert = await crypto.certStorage.getItem(certificateIndex);
     const rawCert = await crypto.certStorage.exportCert("raw", cert);
-
+    const hexPub = utils.Convert.ToHex(rawPub);
     const thumbPub = await crypto.subtle.digest("SHA-256", rawPub); // 32bytes: 256bits
     const thumbCert = await crypto.subtle.digest("SHA-256", rawCert);
     const hexThumbPub = utils.Convert.ToHex(thumbPub);
     const hexThumbCert = utils.Convert.ToHex(thumbCert);
     
-    // console.log(thumbPub);
+    console.log(hexPub);
     console.log("hexThumbPub: ", hexThumbPub);
     // console.log(thumbCert);
     console.log("hexThumbPub: ", hexThumbCert);
@@ -177,7 +176,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
     setStatus('Sending...');
 
     api.tx.myNumberModule
-    .registerAccount(hexThumbPub, hexThumbCert, hexThumbSignature)
+    .registerAccount("0x"+hexPub, "0x"+hexThumbCert, "0x"+hexThumbSignature)
     .signAndSend(fromPair, ({status}) => {
         if (status.isFinalized) {
         setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
