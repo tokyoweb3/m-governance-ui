@@ -8,21 +8,21 @@ import keyring from '@polkadot/ui-keyring';
 import { Container, Dimmer, Loader} from 'semantic-ui-react';
 import types from './Type';
 // Components
-import MenuBar from './components/MenuBar';
-import Balances from './Balances';
-import NodeInfo from './NodeInfo';
-import Transfer from './Transfer';
-import CreateVote from './components/createVote';
-import VoteListings from './components/VoteListings';
-import VoteView from './components/VoteView';
-import Certificate from './components/Certificate';
+import MenuBar from './Menu/MenuBar';
+import Balances from './Transfer/Balances';
+import NodeInfo from './Menu/NodeInfo';
+import Transfer from './Transfer/Transfer';
+import CreateVote from './Vote/createVote';
+import VoteListings from './Vote/VoteListings';
+import VoteView from './Vote/VoteView';
+import Certificate from './Certificate/Certificate';
 
 import 'semantic-ui-css/semantic.min.css'
 
 export default function App () {
   const [api, setApi] = useState();
   const [apiReady, setApiReady] = useState();
-  const [blockNumber, setBlockNumber] = useState('1');
+  const [blockNumber, setBlockNumber] = useState('0');
   const WS_PROVIDER = 'ws://127.0.0.1:9944';
 
   useEffect(() => {
@@ -44,8 +44,8 @@ export default function App () {
 
   useEffect(() => {
     if(apiReady){
-      let unsubscribe;
-      const f = async () => api.rpc.chain.subscribeNewHeads((header) => {
+      let unsubscribe: () => void;
+      const f = async () => api.rpc.chain.subscribeNewHeads((header: { number: string; }) => {
         setBlockNumber(header.number);
       });
       f().then(unsub => {
@@ -55,7 +55,7 @@ export default function App () {
     }
   },[apiReady]);
 
-  const loader = function (text){
+  const loader = function (text: string){
     return (
       <Dimmer active>
         <Loader size='small'>{text}</Loader>

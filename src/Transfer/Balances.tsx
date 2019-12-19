@@ -1,27 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { Table } from 'semantic-ui-react';
 
-export default function Balances (props) {
-  const { api, keyring } = props;
+interface Props {
+  api: {query: any; };
+  keyring: {getPairs: any; };
+}
+
+export default function Balances ({api, keyring}: Props) {
   const accounts = keyring.getPairs();
-  const addresses = accounts.map(account => account.address);
-  const accountNames = accounts.map((account) => account.meta.name);
-  const [balances, setBalances] = useState({});
+  const addresses = accounts.map((account: { address: string; }) => account.address);
+  const accountNames = accounts.map((account: { meta: { name: string; }; }) => account.meta.name);
+  const [balances, setBalances] = useState<{[s:string]: number; }>({});
 
 
 
   useEffect(() => {
-    let unsubscribeAll
+    let unsubscribeAll: () => void
 
     api.query.balances.freeBalance
-      .multi(addresses, (currentBalances) => {
-        const balancesMap = addresses.reduce((acc, address, index) => ({
+      .multi(addresses, (currentBalances: { [x: string]: { toString: () => void; }; }) => {
+        const balancesMap: {[s: string]: number} = addresses.reduce((acc: any, address: string, index: string | number) => ({
           ...acc,
           [address]: currentBalances[index].toString()
         }), {});
         setBalances(balancesMap);
       })
-      .then(unsub => { unsubscribeAll = unsub; })
+      .then((unsub: any) => { unsubscribeAll = unsub; })
       .catch(console.error);
 
     return () => unsubscribeAll && unsubscribeAll();
@@ -39,7 +43,7 @@ export default function Balances (props) {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {addresses.map((address, index) => {
+          {addresses.map((address: string, index: string | number) => {
             return (
               <Table.Row key={index}>
                 <Table.Cell textAlign='right'>{accountNames[index]}</Table.Cell>

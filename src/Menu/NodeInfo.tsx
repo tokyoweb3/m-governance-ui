@@ -1,11 +1,19 @@
 import React, {useEffect, useState} from 'react';
 
-export default function NodeInfo(props) {
-  const {api, blockNumber} = props;
-  const [nodeInfo, setNodeInfo] = useState({});
+interface Props {
+  api: {rpc: any; };
+  blockNumber: string;
+}
+interface NodeInfo {
+  chain: string;
+  nodeName: string;
+  nodeVersion: string;
+}
+
+export default function NodeInfo({api, blockNumber}: Props) {
+  const [nodeInfo, setNodeInfo] = useState<NodeInfo>({chain: '', nodeName: '', nodeVersion: ''});
 
   useEffect(() => {
-    // let unsubscribe;
     const getInfo = () => {
       Promise.all([
         api.rpc.system.chain(),
@@ -17,14 +25,11 @@ export default function NodeInfo(props) {
           chain,
           nodeName,
           nodeVersion,
-          // blockNumber: blockNumber.block.header.number
         })
       })
       .catch((e) => console.error(e));
     }
     getInfo()
-
-    // return ()=> unsubscribe && unsubscribe();
   },[]);
   
   return (
