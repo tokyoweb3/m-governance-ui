@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dropdown, Form, Table} from 'semantic-ui-react';
+import { Button, Dropdown, Form, Table, DropdownProps} from 'semantic-ui-react';
+
+declare function require(x: string): any;
 const jwkToPem = require('jwk-to-pem');
 const utils = require('pvtsutils');
 
-export default function Provider ({ws}) {
+export default function Provider ({ws} : {ws: any}) {
   const initialOption = [
     {
     key: "None",
@@ -15,20 +17,20 @@ export default function Provider ({ws}) {
       name: "",
       hash: "SHA-256",
     },
-    message: "",
-    key: ""
+    message: [],
+    key: {}
   };
-  const [selectedProvider, setSelectedProvider] = useState("");
-  const [providerOptions, setProviderOptions] = useState([]);
-  const [providers, setProviders] = useState([]);
-  const [items, setItems ] = useState([]);
+  const [selectedProvider, setSelectedProvider] = useState<string | undefined>("");
+  const [providerOptions, setProviderOptions] = useState<{key: string; value: string; text:string;}[]>([]);
+  const [providers, setProviders] = useState<{id: string; name: string; atr: string; }[]>([]);
+  const [items, setItems ] = useState<{index:string; id: string; type: string; subjectName: string}[]>([]);
   
-  const [publicKeys, setPublicKeys] = useState([]);
-  const [privateKeys, setPrivateKeys] = useState([]);
-  const [signForm, setSignForm] = useState(initialForm);
+  const [publicKeys, setPublicKeys] = useState<any[]>([]);
+  const [privateKeys, setPrivateKeys] = useState<any[]>([]);
+  const [signForm, setSignForm] = useState<{alg: {name: string; hash: string}; key: any; message: any}>(initialForm);
 
-  const onChange = (_, provider) => {
-    setSelectedProvider(provider.value);
+  const onChange = (_: any, data:DropdownProps) => {
+    setSelectedProvider(data.value?.toString());
   }
 
   useEffect(() => {
@@ -43,10 +45,10 @@ export default function Provider ({ws}) {
 
   async function main() {
     ws.connect("127.0.0.1:31337")
-      .on("error", function (e) {
+      .on("error", function (e: any) {
         console.error(e);
       })
-      .on("listening", async (e) => {
+      .on("listening", async (e: any) => {
         // Check if end-to-end session is approved
         if (! await ws.isLoggedIn()) {
           const pin = await ws.challenge();
@@ -57,7 +59,7 @@ export default function Provider ({ws}) {
           // ask to approve session
           await ws.login();
         }
-        await fillProviders(ws);
+        await fillProviders();
         if(selectedProvider){
           await getItems(selectedProvider);
         }
@@ -66,35 +68,37 @@ export default function Provider ({ws}) {
         //   .on("remove", fillProviders(ws));
     });
   }
-
   const fillProviders = async() => {
     ws.info()
-      .then(info => {
+      .then((info: { providers: {id: string; name: string; atr: string}[] }) => {
+        setProviderOptions([]);
+        setProviders([]);
         for (const index in info.providers){
           setProviderOptions(oldValues => {
-            const newValues = [...oldValues];
-            newValues[index] = {
-              key: info.providers[index].id,
-              value: info.providers[index].id,
-              text: info.providers[index].name
-            };
-            return newValues;
-          });
-
+            return [
+              ...oldValues,
+              {
+                key: info.providers[index].id,
+                value: info.providers[index].id,
+                text: info.providers[index].name
+              }
+            ];
+          })
           setProviders(oldValues => {
-            const newValues = [...oldValues];
-            newValues[index] =  {
-              id: info.providers[index].id,
-              name: info.providers[index].name,
-              atr: info.providers[index].atr || "None"
-            };
-            return newValues;
-          });
+            return[
+              ...oldValues,
+              {
+                id: info.providers[index].id,
+                name: info.providers[index].name,
+                atr: info.providers[index].atr || "None"
+              }
+            ];
+          })
         }
       });
   }
 
-  async function getItems(providerId){
+  async function getItems(providerId: string){
     const crypto = await ws.getCrypto(providerId);
     // console.log(crypto);
     await crypto.reset();
@@ -181,27 +185,8 @@ export default function Provider ({ws}) {
     const hexValue = utils.Convert.ToHex(signature);
     console.log("Signed!");
   }
-
-  // const verify = async() => {
-  //   //TODO: verify with publickey
-  //   // signature = await crypto.subtle.sign(alg, privateKey, message);
-  //   // console.log(signature);
-  //   for (const index in publicKeys) {
-  //     try{
-  //       alg = {
-  //         name: publicKeys[index].algorithm.name,
-  //         hash: "SHA-256",
-  //       }
-  //       const ok = await crypto.subtle.verify(alg, publicKeys[index], signature, message);
-  //       console.log(ok);
-  //     }
-  //     catch (e){
-  //       console.error(e);
-  //     }
-  //   }
-  // }
   
-  async function downloadItem(e, index){
+  async function downloadItem(e: { preventDefault: () => void; }, index: string){
     e.preventDefault();
     try{
     const crypto = await ws.getCrypto(selectedProvider);
@@ -326,7 +311,7 @@ export default function Provider ({ws}) {
         {items.map((item, index) => {
             return (
               <Table.Row key={index}>
-                <Table.Cell onClick={e => downloadItem(e, item.index)}>{item.index}
+                <Table.Cell onClick={(e: any) => downloadItem(e, item.index)}>{item.index}
                 </Table.Cell>
                 <Table.Cell>{item.id}</Table.Cell>
                 <Table.Cell>{item.type}</Table.Cell>

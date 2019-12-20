@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {Loader, Dimmer, Segment, Image} from 'semantic-ui-react';
 
 // import components
-import Provider from './Provider.js';
-import Register from './Register.js';
+import Provider from './Provider';
+import Register from './Register';
 
 const urls = ["https://peculiarventures.github.io/pv-webcrypto-tests/src/asmcrypto.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/elliptic.js", "https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.0/dist/protobuf.js", "https://peculiarventures.github.io/webcrypto-local/webcrypto-socket.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/webcrypto-liner.min.js", "https://cdn.rawgit.com/jakearchibald/idb/97e4e878/lib/idb.js"];
 
