@@ -17,15 +17,18 @@ export default function Register ({api, keyring, ws, providerOptions}) {
       certificateIndex: '',
       hexThumbSignature: '',
       privateKeyIndex: '',
+      signature: {},
+      message: ''
   };
   const [formState, setFormState] = useState(initialState);
-  const { addressFrom, hexThumbSignature, privateKeyIndex, publicKeyIndex, certificateIndex } = formState;
+  const { addressFrom, signature, message, hexThumbSignature, privateKeyIndex, publicKeyIndex, certificateIndex } = formState;
 
   const [privateKeyOptions, setPrivateKeyOptions] = useState([]);
   const [publicKeyOptions, setPublicKeyOptions] = useState([]);
   const [certificateOptions, setCertificateOptions] = useState([]);
 
   const [selectedProvider, setSelectedProvider] = useState();
+  const [verified, setVerified] = useState(false);
 
   const onChange = (_, data) => {
     console.log(data.value);
@@ -58,7 +61,9 @@ export default function Register ({api, keyring, ws, providerOptions}) {
       setFormState(formState=>{
         return{
           ...formState,
-          hexThumbSignature
+          hexThumbSignature,
+          signature: rawSignature,
+          message
         };
       });
       console.log(utils.Convert.ToHex(rawSignature));
@@ -66,6 +71,25 @@ export default function Register ({api, keyring, ws, providerOptions}) {
       catch(e){console.error(e)};
   }
   
+  const verify = async(signature, message) => {
+    const crypto = await ws.getCrypto(selectedProvider);
+    const publicKey = await crypto.keyStorage.getItem(publicKeyIndex);
+    const alg = {name: "RSASSA-PKCS1-v1_5", hash: "SHA-256"};
+    let rsassaPublicKey;
+
+    if(publicKey.algorithm.name === "RSA-OAEP"){
+      const spki = await crypto.subtle.exportKey("spki", publicKey);
+      rsassaPublicKey = await crypto.subtle.importKey("spki", spki, {name: "RSASSA-PKCS1-v1_5", hash: "SHA-256"}, true, ["verify"]);
+    }
+    
+    try{
+      const ok = await crypto.subtle.verify(alg, rsassaPublicKey || publicKey, signature, message);
+      setVerified(ok);
+    }
+    catch (e){
+      console.error(e);
+    }
+  }
 
   const getItems = async(providerId) => {
     const crypto = await ws.getCrypto(providerId);
@@ -175,7 +199,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
 
     setStatus('Sending...');
 
-    api.tx.myNumberModule
+    await api.tx.myNumberModule
     .registerAccount("0x"+hexPub, "0x"+hexThumbCert, "0x"+hexThumbSignature)
     .signAndSend(fromPair, ({status}) => {
         if (status.isFinalized) {
@@ -187,6 +211,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
         setStatus(':( transaction failed');
         console.error('ERROR:', e);
     });
+    verify(signature, message);
   }
 
   useEffect(() => {
@@ -304,9 +329,10 @@ export default function Register ({api, keyring, ws, providerOptions}) {
               >
                   Register
               </Button>
-              {status}
               </Form.Field>
-          </Form>
+      </Form>
+      <h3>Verification: {`${verified}`}</h3>
+      {status}
     </>
   );
 } 
