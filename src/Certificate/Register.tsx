@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dropdown, Form, Input, Container, Header } from 'semantic-ui-react';
+import { Button, Dropdown, Form, Input, Container, Header, DropdownProps } from 'semantic-ui-react';
 const utils = require('pvtsutils');
 
-export default function Register ({api, keyring, ws, providerOptions}) {
-  const keyringOptions = keyring.getPairs().map((account) => ({
+interface Props {
+  api: any;
+  keyring: any;
+  ws: any;
+  providerOptions: any;
+}
+interface Status{
+  status: {
+    isFinalized: boolean,
+    asFinalized: string,
+    type: string
+  }
+}
+export default function Register ({api, keyring, ws, providerOptions}: Props) {
+  const keyringOptions = keyring.getPairs().map((account: { address: any; meta: { name: string; }; }) => ({
     key: account.address,
     value: account.address,
     text: account.meta.name.toUpperCase()
@@ -23,14 +36,14 @@ export default function Register ({api, keyring, ws, providerOptions}) {
   const [formState, setFormState] = useState(initialState);
   const { addressFrom, signature, message, hexThumbSignature, privateKeyIndex, publicKeyIndex, certificateIndex } = formState;
 
-  const [privateKeyOptions, setPrivateKeyOptions] = useState([]);
-  const [publicKeyOptions, setPublicKeyOptions] = useState([]);
-  const [certificateOptions, setCertificateOptions] = useState([]);
+  const [privateKeyOptions, setPrivateKeyOptions] = useState<{key: string; value: string; text:string;}[]>([]);
+  const [publicKeyOptions, setPublicKeyOptions] = useState<{key: string; value: string; text:string;}[]>([]);
+  const [certificateOptions, setCertificateOptions] = useState<{key: any; value: any; text:string;}[]>([]);
 
   const [selectedProvider, setSelectedProvider] = useState();
   const [verified, setVerified] = useState(false);
 
-  const onChange = (_, data) => {
+  const onChange = (_: any, data: DropdownProps) => {
     console.log(data.value);
       setFormState(FormState => {
         return {
@@ -39,7 +52,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
         };
       });
   }
-  const onChangeProvider = async (_, data) => {
+  const onChangeProvider = async (_: any, data: DropdownProps) => {
     setSelectedProvider(data.value);
     getItems(data.value);
   }
@@ -71,7 +84,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
       catch(e){console.error(e)};
   }
   
-  const verify = async(signature, message) => {
+  const verify = async(signature: {}, message: string) => {
     const crypto = await ws.getCrypto(selectedProvider);
     const publicKey = await crypto.keyStorage.getItem(publicKeyIndex);
     const alg = {name: "RSASSA-PKCS1-v1_5", hash: "SHA-256"};
@@ -91,7 +104,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
     }
   }
 
-  const getItems = async(providerId) => {
+  const getItems = async(providerId: any) => {
     const crypto = await ws.getCrypto(providerId);
     await crypto.reset();
 
@@ -158,10 +171,10 @@ export default function Register ({api, keyring, ws, providerOptions}) {
 
   const main = async () => {
     ws.connect("127.0.0.1:31337")
-      .on("error", function (e) {
+      .on("error", function (e: any) {
         console.error(e);
       })
-      .on("listening", async (e) => {
+      .on("listening", async (e: any) => {
         // Check if end-to-end session is approved
         if (! await ws.isLoggedIn()) {
           const pin = await ws.challenge();
@@ -201,13 +214,13 @@ export default function Register ({api, keyring, ws, providerOptions}) {
 
     await api.tx.myNumberModule
     .registerAccount("0x"+hexPub, "0x"+hexThumbCert, "0x"+hexThumbSignature)
-    .signAndSend(fromPair, ({status}) => {
+    .signAndSend(fromPair, ({status}: Status) => {
         if (status.isFinalized) {
         setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
         } else {
         setStatus(`Current transfer status: ${status.type}`);
         }
-    }).catch((e) => {
+    }).catch((e: any) => {
         setStatus(':( transaction failed');
         console.error('ERROR:', e);
     });
@@ -218,12 +231,10 @@ export default function Register ({api, keyring, ws, providerOptions}) {
     main();
   }, [])
 
-  const lineMaker = (str) =>{
-    return str.replace(/(.{100})/g, "$1 ");
-  }
-  const spaceMaker = (str) =>{
-    return str.replace(/(.{2})(.{100})/g, "$1 ", "$2\n");
-  }
+  // const lineMaker = (str: string) =>{
+  //   return str.replace(/(.{100})/g, "$1 ");
+  // }
+  
   const canRegister = () => {
     if(addressFrom && publicKeyIndex && certificateIndex && hexThumbSignature && privateKeyIndex){
       return false;
@@ -337,7 +348,7 @@ export default function Register ({api, keyring, ws, providerOptions}) {
   );
 } 
 
-function GetCommonName(name) {
+function GetCommonName(name: string) {
   var reg = /CN=(.+),?/i;
   var res = reg.exec(name);
   return res ? res[1] : "Unknown";
