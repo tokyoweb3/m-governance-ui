@@ -5,6 +5,25 @@ declare function require(x: string): any;
 const jwkToPem = require('jwk-to-pem');
 const utils = require('pvtsutils');
 
+const { createPKIJSCertificate } = require('./pkijshelpers');
+const pkiJS = require('pkijs');
+const {userPem, userIntermediatePem, cAPem, expiredPemLeaf, expiredPemIntermediate, comodoRSACertificationAuthority } = require('./pemCerts');
+const { userCaPem1 } = cAPem;
+
+async function validateExpiredChainByPkiJS() {
+  const userAuth = createPKIJSCertificate(userPem);
+  const userIntermediate = createPKIJSCertificate(userIntermediatePem);
+  const userCA = createPKIJSCertificate(userCaPem1);
+
+  const chainValidator = new pkiJS.CertificateChainValidationEngine({
+    certs: [userAuth],
+    trustedCerts: [userCA]
+  });
+
+  const { result, resultCode, resultMessage } = await chainValidator.verify();
+  console.log(result, resultCode, resultMessage);
+}
+
 export default function Provider ({ws} : {ws: any}) {
   const initialOption = [
     {
@@ -35,6 +54,7 @@ export default function Provider ({ws} : {ws: any}) {
 
   useEffect(() => {
     main();
+    validateExpiredChainByPkiJS();
   }, [])
 
   const refresh = async () => {

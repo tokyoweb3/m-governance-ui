@@ -15,6 +15,11 @@ interface Status{
     type: string
   }
 }
+interface Options{
+  key: string;
+  value: string;
+  text: string;
+}
 export default function Register ({api, keyring, ws, providerOptions}: Props) {
   const keyringOptions = keyring.getPairs().map((account: { address: any; meta: { name: string; }; }) => ({
     key: account.address,
@@ -36,9 +41,9 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
   const [formState, setFormState] = useState(initialState);
   const { addressFrom, signature, message, hexThumbSignature, privateKeyIndex, publicKeyIndex, certificateIndex } = formState;
 
-  const [privateKeyOptions, setPrivateKeyOptions] = useState<{key: string; value: string; text:string;}[]>([]);
-  const [publicKeyOptions, setPublicKeyOptions] = useState<{key: string; value: string; text:string;}[]>([]);
-  const [certificateOptions, setCertificateOptions] = useState<{key: any; value: any; text:string;}[]>([]);
+  const [privateKeyOptions, setPrivateKeyOptions] = useState<Options[]>([]);
+  const [publicKeyOptions, setPublicKeyOptions] = useState<Options[]>([]);
+  const [certificateOptions, setCertificateOptions] = useState<Options[]>([]);
 
   const [selectedProvider, setSelectedProvider] = useState();
   const [verified, setVerified] = useState(false);
@@ -71,7 +76,7 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
       const rawSignature = await crypto.subtle.sign(alg, privateKey, message);
       const thumbSignature = await crypto.subtle.digest("SHA-256", rawSignature);
       const hexThumbSignature = utils.Convert.ToHex(thumbSignature);
-      setFormState(formState=>{
+      setFormState((formState: any)=>{
         return{
           ...formState,
           hexThumbSignature,
@@ -119,6 +124,7 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
       try {
         const item = await crypto.keyStorage.getItem(index);
         if (item.type === "private") {
+          console.log(item);
           setPrivateKeyOptions(privateKeyOptions => {
             return[
               ...privateKeyOptions,
@@ -152,6 +158,9 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
     for (const index of indexes) {
       try {
         const item = await crypto.certStorage.getItem(index);
+        const certChain = await crypto.certStorage.getChain(item);
+        console.log(item);
+        console.log(certChain);
           setCertificateOptions(certificateOptions => {
             return[
               ...certificateOptions,
@@ -169,26 +178,25 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
     }
   }
 
-  const main = async () => {
-    ws.connect("127.0.0.1:31337")
-      .on("error", function (e: any) {
-        console.error(e);
-      })
-      .on("listening", async (e: any) => {
-        // Check if end-to-end session is approved
-        if (! await ws.isLoggedIn()) {
-          const pin = await ws.challenge();
-          // show PIN
-          setTimeout(() => {
-            alert("2key session PIN:" + pin);
-          }, 100)
-          // ask to approve session
-          await ws.login();
+  async function GetCertificateKey(type: string, provider: any, certID: string) {
+    const keyIDs = await provider.keyStorage.keys()
+    for (const keyID of keyIDs) {
+      const parts = keyID.split("-");
+      // parts = type-id-certId
+      if (parts[0] === type && parts[2] === certID.split("-")[2]) {
+        const key = await provider.keyStorage.getItem(keyID);
+        if (key) {
+          return key;
         }
-        if(selectedProvider){
-          await getItems(selectedProvider);
-        }
-    });
+      }
+    }
+    if (type === "public") {
+      const cert = await provider.certStorage.getItem(certID);
+      if (cert) {
+        return cert.publicKey;
+      }
+    }
+    return null;
   }
 
   const registerAccount = async () => {
@@ -225,6 +233,28 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
         console.error('ERROR:', e);
     });
     verify(signature, message);
+  }
+
+  const main = async () => {
+    ws.connect("127.0.0.1:31337")
+      .on("error", function (e: any) {
+        console.error(e);
+      })
+      .on("listening", async (e: any) => {
+        // Check if end-to-end session is approved
+        if (! await ws.isLoggedIn()) {
+          const pin = await ws.challenge();
+          // show PIN
+          setTimeout(() => {
+            alert("2key session PIN:" + pin);
+          }, 100)
+          // ask to approve session
+          await ws.login();
+        }
+        if(selectedProvider){
+          await getItems(selectedProvider);
+        }
+    });
   }
 
   useEffect(() => {

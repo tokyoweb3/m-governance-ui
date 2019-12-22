@@ -29,11 +29,11 @@ export default function App () {
     const provider = new WsProvider(WS_PROVIDER);
 
     ApiPromise.create({provider, types})
-      .then((api) => {
+      .then((api: { isReady: Promise<any>; }) => {
         setApi(api);
         api.isReady.then(() => setApiReady(true));
       })
-      .catch((e) => console.error(e));
+      .catch((e: any) => console.error(e));
   }, []);
 
   useEffect(() => { 
