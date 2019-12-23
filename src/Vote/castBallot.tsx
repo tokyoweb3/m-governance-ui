@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Button, Dropdown, Form, DropdownProps } from 'semantic-ui-react';
+import { Button, Dropdown, Form, DropdownProps, Message, Segment } from 'semantic-ui-react';
 
 interface Props {
   api: any;
@@ -8,7 +8,7 @@ interface Props {
 }
 
 export default function CastBallot({api, keyring, id}: Props) {
-  const [status, setStatus] = useState('');
+  const [message, setMessage] = useState({header: "", content:"", success:false, error:false, warning:false});
   const initialState = {
     addressFrom: '',
     reference_id: id,
@@ -37,24 +37,23 @@ export default function CastBallot({api, keyring, id}: Props) {
 
   const castBallot = () => {
     const fromPair = keyring.getPair(addressFrom);
-    setStatus('Sending...');
+    setMessage({...message, header: 'Just one second', content: 'Sending...', error: true});
 
     api.tx.governanceModule
     .castBallot(reference_id, ballot)
     .signAndSend(fromPair, ({status}: {status:{isFinalized: boolean; asFinalized: string; type: string; }}) => {
       if (status.isFinalized) {
-        setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
+        setMessage({...message, header: 'Transaction Completed!', content:`Completed at block hash #${status.asFinalized.toString()}`, success:true});
         } else {
-        setStatus(`Current transfer status: ${status.type}`);
+        setMessage({...message, header: '', content: `Current transfer status: ${status.type}`, warning: true});
         }
     }).catch((e: any) => {
-      setStatus(':( transaction failed');
+      setMessage({...message, header: 'Error', content: ':( transaction failed. Check the log.', error: true});
       console.error('ERROR:', e);
     });
   }
-
   return(
-    <>
+    <Segment.Group>
       <h1>Cast Ballot</h1>
       <Form>
         <Form.Field>
@@ -88,9 +87,15 @@ export default function CastBallot({api, keyring, id}: Props) {
             type='submit'>
             Send
           </Button>
-          {status}
         </Form.Field>
       </Form>
-    </>
+      {message.content && <Message
+        success={message.success}
+        error={message.error}
+        warning={message.warning}
+        header={message.header}
+        content={message.content}
+      />}
+    </Segment.Group>
   );
 }

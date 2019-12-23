@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {Loader, Dimmer, Segment, Image} from 'semantic-ui-react';
+import {Loader, Dimmer, Segment, Image, Tab} from 'semantic-ui-react';
 
 // import components
 import Provider from './Provider';
@@ -21,6 +21,11 @@ export default function Certificate ({ api, keyring }: Props) {
   const [ws, setWs] = useState();
   const [wsReady, setWsReady] = useState(false);
   const [providerOptions, setProviderOptions] = useState<{key:string, value: string, text: string}[]>([]);
+  const panes = [
+    { menuItem: {key: 'providers', icon: 'rss', content: 'Providers'}, render: ()=> <Tab.Pane><Provider ws={ws}/></Tab.Pane>},
+    { menuItem: {key: 'register', icon: 'book', content: 'Register'}, render: ()=> <Tab.Pane><Register api={api} keyring={keyring} ws={ws} providerOptions={providerOptions}/></Tab.Pane>},
+    { menuItem: {key: 'centralAuthority', icon: 'building', content: 'Central Authority'}, render: ()=> <Tab.Pane>CA</Tab.Pane>},
+  ];
 
   // load libs
   useEffect(() => { 
@@ -107,8 +112,7 @@ export default function Certificate ({ api, keyring }: Props) {
 
   return(
     <>
-      <Register api={api} keyring={keyring} ws={ws} providerOptions={providerOptions}/>     
-      <Provider ws={ws}/>
+      <Tab menu={{color: 'grey', inverted: true}} panes={panes} />
     </>
   );
 }

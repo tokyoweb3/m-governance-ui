@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData } from 'semantic-ui-react';
+import { Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData, Segment} from 'semantic-ui-react';
 
 interface Props {
   api: {query: any, tx: any; };
@@ -60,8 +60,8 @@ export default function Transfer ({api, keyring} : Props) {
   };
 
   return (
-    <>
-      <h1>Transfer</h1>
+    <Segment.Group>
+      <Segment><h1>Transfer</h1></Segment>
       <Form>
         <Form.Field>
           <Dropdown
@@ -105,6 +105,6 @@ export default function Transfer ({api, keyring} : Props) {
           {status}
         </Form.Field>
       </Form>
-    </>
+    </Segment.Group>
   );
 }

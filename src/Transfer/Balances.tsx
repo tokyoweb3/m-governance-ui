@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table } from 'semantic-ui-react';
+import { Table, Segment } from 'semantic-ui-react';
 
 interface Props {
   api: {query: any; };
@@ -11,8 +11,6 @@ export default function Balances ({api, keyring}: Props) {
   const addresses = accounts.map((account: { address: string; }) => account.address);
   const accountNames = accounts.map((account: { meta: { name: string; }; }) => account.meta.name);
   const [balances, setBalances] = useState<{[s:string]: number; }>({});
-
-
 
   useEffect(() => {
     let unsubscribeAll: () => void
@@ -32,8 +30,8 @@ export default function Balances ({api, keyring}: Props) {
   }, [api.query.balances.freeBalance]);
 
   return (
-    <>
-      <h1>Balances</h1>
+    <Segment.Group>
+      <Segment><h1>Balances</h1></Segment>
       <Table celled striped>
         <Table.Header>
           <Table.Row>
@@ -54,6 +52,6 @@ export default function Balances ({api, keyring}: Props) {
           })}
         </Table.Body>
       </Table>
-    </>
+    </Segment.Group>
   );
 }

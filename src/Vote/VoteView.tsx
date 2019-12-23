@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Segment } from 'semantic-ui-react';
 
 // components
 import CastBallot from './castBallot';
@@ -76,12 +77,12 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
   }
 
   return(
-    <>    
-      <div style={{float:'left'}}><Link to={`/vote/${parseInt(id!)-1}`}>Before</Link></div>
-      <div style={{paddingLeft: '20px', float:'left'}}><Link to={`/vote/${parseInt(id!)+1}`}>Next</Link></div>
+    <Segment.Group>    
+      <Segment.Group>
+      <div style={{float:'left'}}><Link to={`/vote/${parseInt(id!)-1}`}><h3>Before</h3></Link></div>
+      <div style={{paddingLeft: '20px', float:'left'}}><Link to={`/vote/${parseInt(id!)+1}`}><h3>Next</h3></Link></div>
 
       <h1 style={{clear:'both'}}>Vote#{id}</h1>
-     
       <ul style={{listStyleType:"none"}}>
         <li>Hash: {hash}</li>
         <li>CreatedAt# {when}</li>
@@ -109,11 +110,10 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
           </ul>
         </li>
       </ul>
-
-
+      </Segment.Group>
       <CastBallot api={api} keyring={keyring} id={id}/>
       <ResultChart aye={aye!} nay={nay!}/>
       <ConcludeVote api={api} keyring={keyring} id={id!} vote_ends={parseInt(vote_ends!)} concluded={concluded!} blockNumber={parseInt(blockNumber!)}/>
-    </>
+    </Segment.Group>
   );
 }

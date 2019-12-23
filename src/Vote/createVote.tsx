@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData } from 'semantic-ui-react';
+import { Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData, Segment } from 'semantic-ui-react';
 
 interface Status{
   status: {
@@ -56,8 +56,9 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
     }
 
     return (
-        <>
-            <h1>CreateVote</h1>
+        <Segment.Group>
+          <Segment><h1>CreateVote</h1></Segment>
+          <Segment.Group>
             <Form>
                 <Form.Field>
                 <Dropdown
@@ -121,6 +122,7 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
                 {status}
                 </Form.Field>
             </Form>
-        </>
+          </Segment.Group>
+        </Segment.Group>
     );
 }

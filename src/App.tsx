@@ -8,7 +8,9 @@ import keyring from '@polkadot/ui-keyring';
 import { Container, Dimmer, Loader} from 'semantic-ui-react';
 import types from './Type';
 // Components
+import HomepageLayout from './HomepageLayout';
 import MenuBar from './Menu/MenuBar';
+import Footer from './Menu/Footer';
 import Balances from './Transfer/Balances';
 import NodeInfo from './Menu/NodeInfo';
 import Transfer from './Transfer/Transfer';
@@ -68,14 +70,13 @@ export default function App () {
   }
   
   return (
-    <Container>
+    <Container fluid>
       <NodeInfo
         api={api}
         blockNumber={blockNumber}
       />
 
       <Router>
-        <div>
           <MenuBar/>
           <Switch>
             <Route 
@@ -114,11 +115,11 @@ export default function App () {
               />
             </Route>
             <Route path="/">
-              <h3>Home</h3>
+            <HomepageLayout />
             </Route>
           </Switch>
-        </div>
       </Router>
+      <Footer />
     </Container>
   );
 }

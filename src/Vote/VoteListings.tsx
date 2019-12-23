@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table } from 'semantic-ui-react';
+import { Table, Segment} from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 
 interface Props {
@@ -98,9 +98,10 @@ export default function VoteListings ({api, blockNumber}: Props) {
     }
   }
   return (
-    <>
-      <h1>Votes: {voteCountState}</h1>
-      <Table celled striped>
+    <Segment.Group>
+      <Segment><h1>Votes: {voteCountState}</h1></Segment>
+      <Segment.Group>
+        <Table celled striped>
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell>ID</Table.HeaderCell>
@@ -130,7 +131,8 @@ export default function VoteListings ({api, blockNumber}: Props) {
           })}
         </Table.Body>
       </Table>
-    </>
+      </Segment.Group>
+    </Segment.Group>
   );
 }
   
