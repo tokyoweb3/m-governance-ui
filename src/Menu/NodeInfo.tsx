@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import { Segment } from 'semantic-ui-react';
 
 interface Props {
   api: {rpc: any; };
@@ -33,11 +34,11 @@ export default function NodeInfo({api, blockNumber}: Props) {
   },[]);
   
   return (
-    <>
+    <Segment>
       {nodeInfo.chain} - {nodeInfo.nodeName} (v{nodeInfo.nodeVersion})
       <br/>
       {`#CurrentBlock: ${blockNumber}`}
       <hr/>
-    </>
+    </Segment>
   )
 }

@@ -30,8 +30,8 @@ export default function Balances ({api, keyring}: Props) {
   }, [api.query.balances.freeBalance]);
 
   return (
-    <Segment.Group>
-      <Segment><h1>Balances</h1></Segment>
+    <Segment>
+      <h1>Balances</h1>
       <Table celled striped>
         <Table.Header>
           <Table.Row>
@@ -52,6 +52,6 @@ export default function Balances ({api, keyring}: Props) {
           })}
         </Table.Body>
       </Table>
-    </Segment.Group>
+    </Segment>
   );
 }

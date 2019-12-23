@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Segment } from 'semantic-ui-react';
+import { Segment, Tab } from 'semantic-ui-react';
 
 // components
 import CastBallot from './castBallot';
@@ -39,7 +39,17 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
   const { id } = useParams();
   const [voteState, setVoteState] = useState<VoteState>({});
   const { vote_type, approved, creator, vote_ends, when, concluded, hash, aye, nay } = voteState;
-
+  const panes = [
+    { menuItem: {key: 'voteView', icon: 'info', content: 'VoteView'}, render: ()=> 
+    <Tab.Pane>
+      {voteView()}
+      <CastBallot api={api} keyring={keyring} id={id}/>
+      <ResultChart aye={aye!} nay={nay!}/>
+    </Tab.Pane>},
+    { menuItem: {key: 'conclude', icon: 'check circle', content: 'Conclude'}, render: ()=> <Tab.Pane>
+      <ConcludeVote api={api} keyring={keyring} id={id!} vote_ends={parseInt(vote_ends!)} concluded={concluded!} blockNumber={parseInt(blockNumber!)}/>
+    </Tab.Pane>},
+  ]
   // get vote, put it in voteState
   useEffect(() => {
     let unsubscribe: () => any;
@@ -76,9 +86,9 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
     }
   }
 
-  return(
-    <Segment.Group>    
-      <Segment.Group>
+  const voteView = () => {
+    return(
+      <Segment>
       <div style={{float:'left'}}><Link to={`/vote/${parseInt(id!)-1}`}><h3>Before</h3></Link></div>
       <div style={{paddingLeft: '20px', float:'left'}}><Link to={`/vote/${parseInt(id!)+1}`}><h3>Next</h3></Link></div>
 
@@ -110,10 +120,13 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
           </ul>
         </li>
       </ul>
-      </Segment.Group>
-      <CastBallot api={api} keyring={keyring} id={id}/>
-      <ResultChart aye={aye!} nay={nay!}/>
-      <ConcludeVote api={api} keyring={keyring} id={id!} vote_ends={parseInt(vote_ends!)} concluded={concluded!} blockNumber={parseInt(blockNumber!)}/>
+      </Segment>
+      
+    );
+  }
+  return(
+    <Segment.Group>    
+      <Tab menu={{color: 'grey', inverted: true}} panes={panes} />
     </Segment.Group>
   );
 }

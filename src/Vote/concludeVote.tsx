@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { Button, Dropdown, Form, DropdownProps } from 'semantic-ui-react';
+import { Button, Dropdown, Form, DropdownProps, Segment, Message } from 'semantic-ui-react';
 
 interface Props {
   api: {query: any, tx: any; };
@@ -17,8 +17,7 @@ interface Status{
   }
 }
 export default function ConcludeVote({ api, keyring, id, blockNumber, vote_ends, concluded } : Props) {
-  const [status, setStatus] = useState('');
-
+  const [message, setMessage] = useState({header: "", content:"", success:false, error:false, warning:false});
   // when all requirements are set true, clickable
   const requirements = {
     isExpired: false,
@@ -60,20 +59,20 @@ export default function ConcludeVote({ api, keyring, id, blockNumber, vote_ends,
 
   const concludeVote = () => {
     const fromPair = keyring.getPair(addressFrom);
-    setStatus('Sending...');
+    setMessage({...message, header: 'Just one second', content: 'Sending...', warning: true});
 
     api.tx.governanceModule
     .concludeVote(reference_id)
     .signAndSend(fromPair, ({status}: Status) => {
       if (status.isFinalized) {
-        setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
+        setMessage({...message, header: 'Transaction Completed!', content:`Completed at block hash #${status.asFinalized.toString()}`, success:true});
         } else {
-        setStatus(`Current transfer status: ${status.type}`);
+        setMessage({...message, header: '', content: `Current transfer status: ${status.type}`, warning: true});
         }
-    }).catch((e:any) => {
-      setStatus(':( transaction failed');
-      console.error('ERROR:', e);
-    });
+      }).catch((e: any) => {
+        setMessage({...message, header: 'Error', content: ':( transaction failed. Check the log.', error: true});
+        console.error('ERROR:', e);
+      });
   }
 
   useEffect(() => {
@@ -101,7 +100,7 @@ export default function ConcludeVote({ api, keyring, id, blockNumber, vote_ends,
   }
 
   return(
-    <>
+    <Segment>
       <h1>Conclude Vote</h1>
       <ul> Requirements
         <li>isConcluded: {isConcluded? 'True': 'False'}</li>
@@ -129,9 +128,15 @@ export default function ConcludeVote({ api, keyring, id, blockNumber, vote_ends,
             type='submit'>
             Conclude
           </Button>
-          {status}
         </Form.Field>
       </Form>
-    </>
+      {message.content && <Message
+        success={message.success}
+        error={message.error}
+        warning={message.warning}
+        header={message.header}
+        content={message.content}
+      />}
+    </Segment>
   );
 }

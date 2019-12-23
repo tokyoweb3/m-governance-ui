@@ -37,7 +37,7 @@ export default function CastBallot({api, keyring, id}: Props) {
 
   const castBallot = () => {
     const fromPair = keyring.getPair(addressFrom);
-    setMessage({...message, header: 'Just one second', content: 'Sending...', error: true});
+    setMessage({...message, header: 'Just one second', content: 'Sending...', warning: true});
 
     api.tx.governanceModule
     .castBallot(reference_id, ballot)
@@ -53,7 +53,7 @@ export default function CastBallot({api, keyring, id}: Props) {
     });
   }
   return(
-    <Segment.Group>
+    <Segment>
       <h1>Cast Ballot</h1>
       <Form>
         <Form.Field>
@@ -96,6 +96,6 @@ export default function CastBallot({api, keyring, id}: Props) {
         header={message.header}
         content={message.content}
       />}
-    </Segment.Group>
+    </Segment>
   );
 }

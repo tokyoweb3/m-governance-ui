@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData, Segment } from 'semantic-ui-react';
+import { Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData, Segment, Message } from 'semantic-ui-react';
 
 interface Status{
   status: {
@@ -10,7 +10,7 @@ interface Status{
 }
 
 export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
-    const [status, setStatus] = useState('');
+  const [message, setMessage] = useState({header: "", content:"", success:false, error:false, warning:false});
     const initialState = {
         addressFrom: '',
         voteType: 0,
@@ -39,25 +39,25 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
     const createVote = () => {
         const fromPair = keyring.getPair(addressFrom);
 
-        setStatus('Sending...');
+        setMessage({...message, header: 'Just one second', content: 'Sending...', warning: true});
 
         api.tx.governanceModule
         .createVote(voteType, expLength, data, approved)
         .signAndSend(fromPair, ({status}: Status) => {
-            if (status.isFinalized) {
-            setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
+          if (status.isFinalized) {
+            setMessage({...message, header: 'Transaction Completed!', content:`Completed at block hash #${status.asFinalized.toString()}`, success:true});
             } else {
-            setStatus(`Current transfer status: ${status.type}`);
+            setMessage({...message, header: '', content: `Current transfer status: ${status.type}`, warning: true});
             }
-        }).catch((e:any) => {
-            setStatus(':( transaction failed');
-            console.error('ERROR:', e);
+        }).catch((e: any) => {
+          setMessage({...message, header: 'Error', content: ':( transaction failed. Check the log.', error: true});
+          console.error('ERROR:', e);
         });
     }
 
     return (
-        <Segment.Group>
-          <Segment><h1>CreateVote</h1></Segment>
+        <Segment>
+          <h1>CreateVote</h1>
           <Segment.Group>
             <Form>
                 <Form.Field>
@@ -119,10 +119,17 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
                 >
                     Send
                 </Button>
-                {status}
                 </Form.Field>
             </Form>
-          </Segment.Group>
-        </Segment.Group>
+            </Segment.Group>
+          {message.content && <Message
+            success={message.success}
+            error={message.error}
+            warning={message.warning}
+            header={message.header}
+            content={message.content}
+          />}
+
+        </Segment>
     );
 }

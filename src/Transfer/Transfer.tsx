@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData, Segment} from 'semantic-ui-react';
+import { Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData, Segment, Message} from 'semantic-ui-react';
 
 interface Props {
   api: {query: any, tx: any; };
@@ -14,7 +14,7 @@ interface Status{
 }
 
 export default function Transfer ({api, keyring} : Props) {
-  const [status, setStatus] = useState<string>('');
+  const [message, setMessage] = useState({header: "", content:"", success:false, error:false, warning:false});
   const initialState = {
     addressFrom: '',
     addressTo: '',
@@ -43,25 +43,24 @@ export default function Transfer ({api, keyring} : Props) {
   const makeTransfer = () => {
     const fromPair = keyring.getPair(addressFrom);
 
-    setStatus('Sending...');
-
+    setMessage({...message, header: 'Just one second', content: 'Sending...', warning: true});
     api.tx.balances
     .transfer(addressTo, amount)
     .signAndSend(fromPair, ({ status }: Status) => {
-        if (status.isFinalized) {
-        setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
+      if (status.isFinalized) {
+        setMessage({...message, header: 'Transaction Completed!', content:`Completed at block hash #${status.asFinalized.toString()}`, success:true});
         } else {
-        setStatus(`Current transfer status: ${status.type}`);
+        setMessage({...message, header: '', content: `Current transfer status: ${status.type}`, warning: true});
         }
-    }).catch((e: any) => {
-        setStatus(':( transaction failed');
+      }).catch((e: any) => {
+        setMessage({...message, header: 'Error', content: ':( transaction failed. Check the log.', error: true});
         console.error('ERROR:', e);
-    });
+      });
   };
 
   return (
-    <Segment.Group>
-      <Segment><h1>Transfer</h1></Segment>
+    <Segment>
+      <h1>Transfer</h1>
       <Form>
         <Form.Field>
           <Dropdown
@@ -102,9 +101,15 @@ export default function Transfer ({api, keyring} : Props) {
           >
             Send
           </Button>
-          {status}
         </Form.Field>
       </Form>
-    </Segment.Group>
+      {message.content && <Message
+        success={message.success}
+        error={message.error}
+        warning={message.warning}
+        header={message.header}
+        content={message.content}
+      />}
+    </Segment>
   );
 }

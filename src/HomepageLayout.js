@@ -8,14 +8,15 @@ import {
   Header,
   Icon,
   Image,
-  List,
-  Menu,
   Responsive,
   Segment,
   Sidebar,
   Visibility,
 } from 'semantic-ui-react'
 import { Link } from 'react-router-dom';
+import headerImage from './images/headerImage.jpg'
+import image1 from './images/image-01.jpg';
+import image2 from './images/image-02.jpg';
 // Heads up!
 // We using React Static to prerender our docs with server side rendering, this is a quite simple solution.
 // For more advanced usage please check Responsive docs under the "Usage" section.
@@ -23,6 +24,12 @@ const getWidth = () => {
   const isSSR = typeof window === 'undefined'
 
   return isSSR ? Responsive.onlyTablet.minWidth : window.innerWidth
+}
+
+const headerStyle = {
+  backgroundImage: `linear-gradient( rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5) ), url(${headerImage})`, 
+  backgroundSize: 'contain', 
+  backgroundPosition:'center', 
 }
 
 /* eslint-disable react/no-multi-comp */
@@ -89,6 +96,7 @@ class DesktopContainer extends Component {
             textAlign='center'
             style={{ minHeight: 700, padding: '1em 0em' }}
             vertical
+            style = {headerStyle}
           >
             <HomepageHeading />
           </Segment>
@@ -162,7 +170,7 @@ const HomepageLayout = () => (
             </p>
           </Grid.Column>
           <Grid.Column floated='right' width={6}>
-            <Image bordered rounded size='large' src='images/image-01.jpg'/>
+            <Image bordered rounded size='large' src={image1}/>
           </Grid.Column>
         </Grid.Row>
         <Grid.Row>
@@ -176,18 +184,18 @@ const HomepageLayout = () => (
       <Grid celled='internally' columns='equal' stackable>
         <Grid.Row textAlign='center'>
           <Grid.Column style={{ paddingBottom: '5em', paddingTop: '5em' }}>
-            <Header as='h3' style={{ fontSize: '2em' }}>
+            <Header as='h3' style={{ fontSize: '3em' }}>
               "What a Company"
             </Header>
-            <p style={{ fontSize: '1.33em' }}>That is what they all say about us</p>
+            <p style={{ fontSize: '2em' }}>That is what they all say about us</p>
           </Grid.Column>
           <Grid.Column style={{ paddingBottom: '5em', paddingTop: '5em' }}>
-            <Header as='h3' style={{ fontSize: '2em' }}>
+            <Header as='h3' style={{ fontSize: '3em' }}>
               "I shouldn't have gone with their competitor."
             </Header>
-            <p style={{ fontSize: '1.33em' }}>
-              <Image avatar src='/images/avatar/large/nan.jpg' />
-              <b>Nan</b> Chief Fun Officer Acme Toys
+            <p style={{ fontSize: '2em' }}>
+              <Image avatar src={image2} />
+              <b>Rick</b> Chief Technology Officer
             </p>
           </Grid.Column>
         </Grid.Row>
