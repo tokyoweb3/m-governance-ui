@@ -16,12 +16,12 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": false,
+    "isolatedModules": true,
     "noEmitOnError": true,
     "noImplicitAny": true,
     "jsx": "react",
     "noEmit": true,
-    "downlevelIteration": true,
+    "downlevelIteration": true
   },
   "include": [
     "./src/**/*"

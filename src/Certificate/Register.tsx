@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Dropdown, Form, Input, Container, Header, DropdownProps } from 'semantic-ui-react';
+import { cAPem } from './pemCerts';
+import {createPKIJSCertificate} from './pkijshelpers';
 const utils = require('pvtsutils');
+const pkiJS = require('pkijs');
 
 interface Props {
   api: any;
@@ -26,27 +29,29 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
     value: account.address,
     text: account.meta.name.toUpperCase()
   }));
+  const CAOptions = Object.keys(cAPem).map((key, index) => ({
+    key,
+    value: index,
+    text: key
+  }))
   const [status, setStatus] = useState('');
-  const [registerHidden, setRegisterHidden] = useState(true);
 
   const initialState = {
       addressFrom: '',
-      publicKeyIndex: '',
       certificateIndex: '',
       hexThumbSignature: '',
       privateKeyIndex: '',
-      signature: {},
-      message: ''
+      CAIndex: 0
   };
-  const [formState, setFormState] = useState(initialState);
-  const { addressFrom, signature, message, hexThumbSignature, privateKeyIndex, publicKeyIndex, certificateIndex } = formState;
+  const [formState, setFormState] = useState<{addressFrom: string, certificateIndex: string; hexThumbSignature: string; privateKeyIndex: string; CAIndex: number;}>(initialState);
+  const { addressFrom, hexThumbSignature, certificateIndex, CAIndex} = formState;
 
-  const [privateKeyOptions, setPrivateKeyOptions] = useState<Options[]>([]);
-  const [publicKeyOptions, setPublicKeyOptions] = useState<Options[]>([]);
   const [certificateOptions, setCertificateOptions] = useState<Options[]>([]);
 
   const [selectedProvider, setSelectedProvider] = useState();
-  const [verified, setVerified] = useState(false);
+  const [requirements, setRequirements] = useState<{verified: boolean; validated: boolean; }>({verified: false, validated: false});
+  const { verified, validated } = requirements;
+  const [validateStatus, setValidateStatus] = useState("");
 
   const onChange = (_: any, data: DropdownProps) => {
     console.log(data.value);
@@ -65,7 +70,7 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
   const signAccount = async () => {
     try{
       const crypto = await ws.getCrypto(selectedProvider);
-      const privateKey = await crypto.keyStorage.getItem(privateKeyIndex);
+      const privateKey: any = await GetCertificateKey("private", crypto, certificateIndex);
       console.log(privateKey);
       const alg = {
         name: privateKey.algorithm.name || "RSASSA-PKCS1-v1_5",
@@ -84,14 +89,16 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
           message
         };
       });
+
       console.log(utils.Convert.ToHex(rawSignature));
+      verify(rawSignature, message);
       }
       catch(e){console.error(e)};
   }
   
   const verify = async(signature: {}, message: string) => {
     const crypto = await ws.getCrypto(selectedProvider);
-    const publicKey = await crypto.keyStorage.getItem(publicKeyIndex);
+    const publicKey = await GetCertificateKey("public", crypto, certificateIndex);
     const alg = {name: "RSASSA-PKCS1-v1_5", hash: "SHA-256"};
     let rsassaPublicKey;
 
@@ -102,7 +109,10 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
     
     try{
       const ok = await crypto.subtle.verify(alg, rsassaPublicKey || publicKey, signature, message);
-      setVerified(ok);
+      setRequirements({
+          verified: ok,
+          validated: validated
+        })
     }
     catch (e){
       console.error(e);
@@ -117,68 +127,79 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
       await crypto.login();
     }
 
-    let indexes = await crypto.keyStorage.keys();
-    setPrivateKeyOptions([]);
-    setPublicKeyOptions([]);
-    for (const index of indexes) {
-      try {
-        const item = await crypto.keyStorage.getItem(index);
-        if (item.type === "private") {
-          console.log(item);
-          setPrivateKeyOptions(privateKeyOptions => {
-            return[
-              ...privateKeyOptions,
-              {
-                key: index,
-                value: index,
-                text: `${index}: ${item.id}`
-              }
-            ]
-          });
-        } else if(item.type === "public"){
-          setPublicKeyOptions(publicKeyOptions => {
-            return[
-              ...publicKeyOptions,
-              {
-                key: index,
-                value: index,
-                text: `${index}: ${item.id}`
-              }
-            ]
-          });
-        }
-      } catch (e) {
-        console.error(`Cannot get ${index} from CertificateStorage`)
-        console.error(e);
-      }
-    }
+    let privateKeys:string[] = [];
 
-    indexes = await crypto.certStorage.keys();
-    setCertificateOptions([]);
-    for (const index of indexes) {
-      try {
-        const item = await crypto.certStorage.getItem(index);
-        const certChain = await crypto.certStorage.getChain(item);
-        console.log(item);
-        console.log(certChain);
-          setCertificateOptions(certificateOptions => {
-            return[
-              ...certificateOptions,
-              {
-                key: index,
-                value: index,
-                text: `${GetCommonName(item.subjectName)}: ${index}`
-              }
-            ]
-          });
-      } catch (e) {
-        console.error(`Cannot get ${index} from CertificateStorage`)
-        console.error(e);
-      }
+    // get Private keys
+    const getKey = async () =>{  
+      const indexes = await crypto.keyStorage.keys();
+      for (const index of indexes) {
+        try {
+          const item = await crypto.keyStorage.getItem(index);
+          if (item.type === "private") {
+            privateKeys.push(index);
+          } 
+        } catch (e) {
+          console.error(`Cannot get ${index} from CertificateStorage`)
+          console.error(e);
+        }
+      }}
+    
+    // get certs of which id matches with private key.(only takes certs with privatekeys, because sign and verificaiton requires one matching pair of public and privatekey)
+    const getCert = async() => { 
+      const certs:string[] = await crypto.certStorage.keys();
+      setCertificateOptions([]);
+      for(const keyId of privateKeys){
+        const keyParts = keyId.split('-');
+      for (const cert of certs) {
+        const certParts = cert.split('-');
+        if(keyParts[2] === certParts[2]){
+        try {
+          const item = await crypto.certStorage.getItem(cert);
+            setCertificateOptions(certificateOptions => {
+              return[
+                ...certificateOptions,
+                {
+                  key: cert,
+                  value: cert,
+                  text: `${GetCommonName(item.subjectName)}: ${cert}`
+                }
+              ]
+            });
+        } catch (e) {
+          console.error(`Cannot get ${cert} from CertificateStorage`)
+          console.error(e);
+        }
+      }}
     }
+    }
+    await getKey();
+    await getCert();
   }
 
-  async function GetCertificateKey(type: string, provider: any, certID: string) {
+  const validate =  async () => {
+    const crypto = await ws.getCrypto(selectedProvider);
+    const item = await crypto.certStorage.getItem(certificateIndex);
+    const userPem = await crypto.certStorage.exportCert("PEM", item);
+
+    const userAuth = createPKIJSCertificate(userPem);
+    const caPem = Object.values(cAPem)[CAIndex];
+    const userCA = createPKIJSCertificate(caPem);
+  
+    const chainValidator = new pkiJS.CertificateChainValidationEngine({
+      certs: [userAuth],
+      trustedCerts: [userCA]
+    });
+  
+    const { result, resultCode, resultMessage } = await chainValidator.verify();
+    console.log(result, resultCode, resultMessage);
+    setRequirements({
+        verified: verified,
+        validated: result
+    })
+    setValidateStatus(result?"Validation Successful!": `Error: ${resultMessage}.`);
+  }
+
+  const GetCertificateKey = async (type: string, provider: any, certID: string) => {
     const keyIDs = await provider.keyStorage.keys()
     for (const keyID of keyIDs) {
       const parts = keyID.split("-");
@@ -202,26 +223,26 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
   const registerAccount = async () => {
     const fromPair = keyring.getPair(addressFrom);
     const crypto = await ws.getCrypto(selectedProvider);
-    const publicKey = await crypto.keyStorage.getItem(publicKeyIndex);
-    const rawPub = await crypto.subtle.exportKey("raw", publicKey);
 
     const cert = await crypto.certStorage.getItem(certificateIndex);
     const rawCert = await crypto.certStorage.exportCert("raw", cert);
-    const hexPub = utils.Convert.ToHex(rawPub);
-    const thumbPub = await crypto.subtle.digest("SHA-256", rawPub); // 32bytes: 256bits
+
     const thumbCert = await crypto.subtle.digest("SHA-256", rawCert);
-    const hexThumbPub = utils.Convert.ToHex(thumbPub);
     const hexThumbCert = utils.Convert.ToHex(thumbCert);
+
+    const caPem = Object.values(cAPem)[CAIndex];
+    const userCA = createPKIJSCertificate(caPem);
+    const thumbCA = await crypto.subtle.digest("SHA-256", userCA.tbs);
+    const hexThumbCA = utils.Convert.ToHex(thumbCA);
     
-    console.log(hexPub);
-    console.log("hexThumbPub: ", hexThumbPub);
     // console.log(thumbCert);
     console.log("hexThumbPub: ", hexThumbCert);
+    console.log("hexThumbCA: ", hexThumbCA);
 
     setStatus('Sending...');
 
     await api.tx.myNumberModule
-    .registerAccount("0x"+hexPub, "0x"+hexThumbCert, "0x"+hexThumbSignature)
+    .registerAccount("0x"+hexThumbCert, "0x"+hexThumbCA, "0x"+hexThumbSignature)
     .signAndSend(fromPair, ({status}: Status) => {
         if (status.isFinalized) {
         setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
@@ -232,7 +253,6 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
         setStatus(':( transaction failed');
         console.error('ERROR:', e);
     });
-    verify(signature, message);
   }
 
   const main = async () => {
@@ -266,10 +286,16 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
   // }
   
   const canRegister = () => {
-    if(addressFrom && publicKeyIndex && certificateIndex && hexThumbSignature && privateKeyIndex){
+    if(addressFrom && certificateIndex && hexThumbSignature && verified && validated){
       return false;
     } 
-    return false;
+    return true;
+  }
+  const getColor =(v:boolean)=>{
+    if(v){
+      return {color:"green"}
+    }
+    return {color:"red"}
   }
   
   return(
@@ -277,10 +303,11 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
       <h1>Register</h1>
       <h3>Requirements:</h3>
       <ul>
-        <li>Account: {formState.addressFrom || "None"}</li>
-        <li>Signed Account: {formState.hexThumbSignature || "None"}</li>
-        <li>PublicKey: {formState.publicKeyIndex || "None"}</li>
-        <li>Certification: {formState.certificateIndex || "None"}</li>
+        <li style={getColor(!!formState.addressFrom)}>Account: {formState.addressFrom || "None"}</li>
+        <li style={getColor(!!formState.hexThumbSignature)}>Signed Account: {formState.hexThumbSignature || "None"}</li>
+        <li style={getColor(!!formState.certificateIndex)}>Certification: {formState.certificateIndex || "None"}</li>
+        <li style={getColor(verified)}>Sign Verification: {verified?"True":"False"}</li>
+        <li style={getColor(validated)}>Cert Validation: {validated?"True":"False"}</li>
       </ul>
       <h2>Sign your Account</h2>
       <Form>
@@ -310,14 +337,14 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
             </Form.Field>
             <Form.Field>
               <Dropdown
-                  placeholder='Select from your private key'
+                  placeholder='Select from your certificates'
                   fluid
-                  label="PrivateKeyIndex"
+                  label="certificateIndex"
                   onChange={onChange}
                   search
                   selection
-                  state='privateKeyIndex'
-                  options={privateKeyOptions}
+                  state='certificateIndex'
+                  options={certificateOptions}
               />
             </Form.Field>
             <Form.Field>
@@ -333,46 +360,46 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
       <div style={{whiteSpace: 'pre-line'}}>
         <Header as='h3'>Signature: </Header>
         {formState.hexThumbSignature}
+        <h3>Verification: {`${verified}`}</h3>
       </div>
-      <h2>Register your Account</h2>
-
+      
+      <h2>Select Root CA to validate your certification.</h2>
       <Form>
-              <Form.Field>
-              <Dropdown
-                  placeholder='Select from your public keys'
-                  fluid
-                  label="PublicKeyOptions"
-                  onChange={onChange}
-                  search
-                  selection
-                  state='publicKeyIndex'
-                  options={publicKeyOptions}
-              />
-            </Form.Field>
-              <Form.Field>
-              <Dropdown
-                  placeholder='Select from your certificates'
-                  fluid
-                  label="CertificatesOptions"
-                  onChange={onChange}
-                  search
-                  selection
-                  state='certificateIndex'
-                  options={certificateOptions}
-              />
-            </Form.Field>
-              <Form.Field>
-              <Button
-                  onClick={registerAccount}
-                  primary
-                  disabled={canRegister()}
-                  type='submit'
-              >
-                  Register
-              </Button>
-              </Form.Field>
+          <Form.Field>
+          <Dropdown
+              placeholder='Select from registered CA'
+              fluid
+              label="CAOptions"
+              onChange={onChange}
+              search
+              selection
+              state='CAIndex'
+              options={CAOptions}
+          />
+        </Form.Field>
+        <Form.Field>
+          <Button
+              onClick={validate}
+              primary
+              type='submit'
+          >
+              Validate Certificate
+          </Button>
+          </Form.Field>
       </Form>
-      <h3>Verification: {`${verified}`}</h3>
+      {validateStatus}
+      <Form>
+          <Form.Field>
+          <Button
+              onClick={registerAccount}
+              primary
+              disabled={canRegister()}
+              type='submit'
+          >
+              Register
+          </Button>
+          </Form.Field>
+      </Form>
       {status}
     </>
   );

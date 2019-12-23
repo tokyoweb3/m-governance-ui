@@ -1,7 +1,7 @@
 const pkiJS = require("pkijs");
 const asn1js = require("asn1js");
 
-module.exports.createPKIJSCertificate = function(pem: string) {
+const createPKIJSCertificate = (pem: string) => {
   const certArrayBuffer = convertPemToArrayBuffer(removePemArmoring(pem));
   const asn1data = asn1js.fromBER(certArrayBuffer);
   return new pkiJS.Certificate({ schema: asn1data.result });
@@ -20,3 +20,5 @@ function convertPemToArrayBuffer(pemString: string) {
 
   return new Uint8Array(buffer).buffer;
 }
+
+export {createPKIJSCertificate};

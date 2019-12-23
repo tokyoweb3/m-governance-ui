@@ -5,25 +5,6 @@ declare function require(x: string): any;
 const jwkToPem = require('jwk-to-pem');
 const utils = require('pvtsutils');
 
-const { createPKIJSCertificate } = require('./pkijshelpers');
-const pkiJS = require('pkijs');
-const {userPem, userIntermediatePem, cAPem, expiredPemLeaf, expiredPemIntermediate, comodoRSACertificationAuthority } = require('./pemCerts');
-const { userCaPem1 } = cAPem;
-
-async function validateExpiredChainByPkiJS() {
-  const userAuth = createPKIJSCertificate(userPem);
-  const userIntermediate = createPKIJSCertificate(userIntermediatePem);
-  const userCA = createPKIJSCertificate(userCaPem1);
-
-  const chainValidator = new pkiJS.CertificateChainValidationEngine({
-    certs: [userAuth],
-    trustedCerts: [userCA]
-  });
-
-  const { result, resultCode, resultMessage } = await chainValidator.verify();
-  console.log(result, resultCode, resultMessage);
-}
-
 export default function Provider ({ws} : {ws: any}) {
   const initialOption = [
     {
@@ -31,22 +12,11 @@ export default function Provider ({ws} : {ws: any}) {
     value: "None",
     text: "None"}
   ];
-  const initialForm = {
-    alg: { 
-      name: "",
-      hash: "SHA-256",
-    },
-    message: [],
-    key: {}
-  };
+
   const [selectedProvider, setSelectedProvider] = useState<string | undefined>("");
   const [providerOptions, setProviderOptions] = useState<{key: string; value: string; text:string;}[]>([]);
   const [providers, setProviders] = useState<{id: string; name: string; atr: string; }[]>([]);
   const [items, setItems ] = useState<{index:string; id: string; type: string; subjectName: string}[]>([]);
-  
-  const [publicKeys, setPublicKeys] = useState<any[]>([]);
-  const [privateKeys, setPrivateKeys] = useState<any[]>([]);
-  const [signForm, setSignForm] = useState<{alg: {name: string; hash: string}; key: any; message: any}>(initialForm);
 
   const onChange = (_: any, data:DropdownProps) => {
     setSelectedProvider(data.value?.toString());
@@ -54,7 +24,6 @@ export default function Provider ({ws} : {ws: any}) {
 
   useEffect(() => {
     main();
-    validateExpiredChainByPkiJS();
   }, [])
 
   const refresh = async () => {
@@ -83,9 +52,9 @@ export default function Provider ({ws} : {ws: any}) {
         if(selectedProvider){
           await getItems(selectedProvider);
         }
-        // ws.cardReader
-        //   .on("insert", fillProviders(ws))
-        //   .on("remove", fillProviders(ws));
+        ws.cardReader
+          .on("insert", fillProviders)
+          .on("remove", fillProviders);
     });
   }
   const fillProviders = async() => {
@@ -133,7 +102,7 @@ export default function Provider ({ws} : {ws: any}) {
     let pubKey;
 
     setItems([]);
-    // get certification
+    // get certification as items
     for (const index of indexes) {
       try {
         const item = await crypto.certStorage.getItem(index);
@@ -159,26 +128,11 @@ export default function Provider ({ws} : {ws: any}) {
       }
     }
 
-    // get keys
+    // get keys as items
     indexes = await crypto.keyStorage.keys();
     for (const index of indexes) {
       try {
         const item = await crypto.keyStorage.getItem(index);
-        if (item.type === "private") {
-          setPrivateKeys(keys => {
-            return[
-              ...keys,
-              item
-            ]
-          });
-        } else {
-          setPublicKeys(keys => {
-            return[
-              ...keys,
-              item
-            ]
-          });
-        }
         setItems(items => {
           return [
             ...items,
@@ -195,15 +149,6 @@ export default function Provider ({ws} : {ws: any}) {
         console.error(e);
       }
     }
-  }
-
-  const sign = async() => {
-    const {alg, key, message} = signForm;
-    const privateKey = privateKeys[0];
-    // const message = utils.Convert.FromUtf8String("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d");
-    const signature = await crypto.subtle.sign(alg, key, message);
-    const hexValue = utils.Convert.ToHex(signature);
-    console.log("Signed!");
   }
   
   async function downloadItem(e: { preventDefault: () => void; }, index: string){
