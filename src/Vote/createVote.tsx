@@ -16,7 +16,7 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
         voteType: 0,
         expLength: 0,
         data: '',
-        approved: false
+        approved: 0
     };
     const [formState, setFormState] = useState(initialState);
     const { addressFrom, voteType, expLength, data, approved } = formState;
@@ -88,18 +88,20 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
                     fluid
                     onChange={onChange}
                     state='expLength'
+                    placeholder='BlockNumber: u64'
                     type='number'
                 />
                 </Form.Field>
+
+                {/* TODO: Selection of index of CAHash */}
                 <Form.Field>
-                <Dropdown
+                <Input
                     label='Approved'
                     fluid
                     onChange={onChange}
                     state='approved'
-                    placeholder="Require Approval?"
-                    selection
-                    options={[{key:0, value: false, text: "False"}, {key:1, value: true, text: "True"}]}
+                    placeholder="CA Index: u64"
+                    type='number'
                 />
                 </Form.Field>
                 <Form.Field>

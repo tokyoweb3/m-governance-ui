@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dropdown, Form, Table, DropdownProps} from 'semantic-ui-react';
+import { Button, Dropdown, Form, Table, DropdownProps, Segment} from 'semantic-ui-react';
 
 declare function require(x: string): any;
 const jwkToPem = require('jwk-to-pem');
@@ -212,7 +212,7 @@ export default function Provider ({ws} : {ws: any}) {
   }
 
   return(
-    <>
+    <Segment>
       <h2>Enumerate providers and their contents</h2>
       <Form>
         <h3>1: Select provider:</h3>
@@ -287,7 +287,7 @@ export default function Provider ({ws} : {ws: any}) {
         </Table.Body>
         </Table>
       </div>
-    </>
+    </Segment>
   );
 }
 

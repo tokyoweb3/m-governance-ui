@@ -4,6 +4,8 @@ import {Loader, Dimmer, Segment, Image, Tab} from 'semantic-ui-react';
 // import components
 import Provider from './Provider';
 import Register from './Register';
+import RegisterCA from './RegisterCA';
+import CAListings from './CAListings';
 
 const urls = ["https://peculiarventures.github.io/pv-webcrypto-tests/src/asmcrypto.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/elliptic.js", "https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.0/dist/protobuf.js", "https://peculiarventures.github.io/webcrypto-local/webcrypto-socket.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/webcrypto-liner.min.js", "https://cdn.rawgit.com/jakearchibald/idb/97e4e878/lib/idb.js"];
 
@@ -24,7 +26,8 @@ export default function Certificate ({ api, keyring }: Props) {
   const panes = [
     { menuItem: {key: 'providers', icon: 'rss', content: 'Providers'}, render: ()=> <Tab.Pane><Provider ws={ws}/></Tab.Pane>},
     { menuItem: {key: 'register', icon: 'book', content: 'Register'}, render: ()=> <Tab.Pane><Register api={api} keyring={keyring} ws={ws} providerOptions={providerOptions}/></Tab.Pane>},
-    { menuItem: {key: 'centralAuthority', icon: 'building', content: 'Central Authority'}, render: ()=> <Tab.Pane>CA</Tab.Pane>},
+    { menuItem: {key: 'centralAuthority', icon: 'building', content: 'Central Authority'}, render: ()=> <Tab.Pane><CAListings api={api} /></Tab.Pane>},
+    { menuItem: {key: 'registerCA', icon: 'building', content: 'Register CA'}, render: ()=> <Tab.Pane><RegisterCA api={api} keyring={keyring} /></Tab.Pane>},
   ];
 
   // load libs

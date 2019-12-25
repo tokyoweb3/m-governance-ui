@@ -4,7 +4,7 @@ const types ={
   "Vote": {
     "id": "u64",
     "vote_type": "u8",
-    "approved": "bool",
+    "approved": "Hash",
     "creator": "AccountId",
     "when": "BlockNumber",
     "vote_ends": "BlockNumber",
@@ -22,9 +22,8 @@ const types ={
     ]
   },
   "Certification": {
-    "pubkey": "Hash",
     "cert": "Hash",
-    "encrypted_account": "Hash"
+    "signature": "Hash"
   }
 }
 

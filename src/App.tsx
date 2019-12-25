@@ -20,6 +20,7 @@ import VoteView from './Vote/VoteView';
 import Certificate from './Certificate/Certificate';
 
 import 'semantic-ui-css/semantic.min.css'
+import CertificateView from './Certificate/CertificateView';
 
 export default function App () {
   const [api, setApi] = useState();
@@ -108,6 +109,10 @@ export default function App () {
               keyring={keyring}
             />
             </Route>
+            <Route 
+              path="/certificate/:hash" 
+              children={<CertificateView />}
+            />
             <Route path="/certificate">
               <Certificate
                 api={api}

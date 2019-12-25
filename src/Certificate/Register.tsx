@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dropdown, Form, Input, Container, Header, DropdownProps } from 'semantic-ui-react';
+import { Button, Dropdown, Form, Input, Container, Header, DropdownProps, Segment } from 'semantic-ui-react';
 import { cAPem } from './pemCerts';
 import {createPKIJSCertificate} from './pkijshelpers';
 const utils = require('pvtsutils');
@@ -241,8 +241,8 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
 
     setStatus('Sending...');
 
-    await api.tx.myNumberModule
-    .registerAccount("0x"+hexThumbCert, "0x"+hexThumbCA, "0x"+hexThumbSignature)
+    await api.tx.certificateModule
+    .registerAccount("0x"+hexThumbCA, "0x"+hexThumbCert, "0x"+hexThumbSignature)
     .signAndSend(fromPair, ({status}: Status) => {
         if (status.isFinalized) {
         setStatus(`Completed at block hash #${status.asFinalized.toString()}`);
@@ -299,7 +299,7 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
   }
   
   return(
-    <>  
+    <Segment>  
       <h1>Register</h1>
       <h3>Requirements:</h3>
       <ul>
@@ -401,7 +401,7 @@ export default function Register ({api, keyring, ws, providerOptions}: Props) {
           </Form.Field>
       </Form>
       {status}
-    </>
+    </Segment>
   );
 } 
 

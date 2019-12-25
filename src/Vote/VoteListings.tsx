@@ -28,7 +28,6 @@ interface Vote {
 }
 
 export default function VoteListings ({api, blockNumber}: Props) {
-
   const [voteCountState, setVoteCountState] = useState<number>(0);
   const [votes, setVotes] = useState<Vote[]>([]);
   const [arrayState, setArrayState] = useState<number[]>([]);
@@ -83,7 +82,6 @@ export default function VoteListings ({api, blockNumber}: Props) {
     }
   }
 
-
   const colorByExpired = (vote_ends: string) =>{
     if(parseInt(vote_ends) > blockNumber){
       return {color: 'green'};
@@ -121,7 +119,8 @@ export default function VoteListings ({api, blockNumber}: Props) {
                 <Table.Cell textAlign='right'><Link to={`/vote/${id}`}>{id}</Link>
                 </Table.Cell>
                 <Table.Cell>{votes[index] && typeOfVote(votes[index].vote_type)}</Table.Cell>
-                <Table.Cell style={colorByBool(votes[index] && votes[index].approved)}>{votes[index] && votes[index].approved}</Table.Cell>
+                {/* TODO: add link to CA*/}
+                <Table.Cell>{votes[index] && votes[index].approved}</Table.Cell> 
                 <Table.Cell>{votes[index] && votes[index].creator}</Table.Cell>
                 <Table.Cell>{votes[index] && votes[index].when}</Table.Cell>
                 <Table.Cell style={colorByExpired(votes[index] && votes[index].vote_ends)}>{votes[index] && votes[index].vote_ends}</Table.Cell>
