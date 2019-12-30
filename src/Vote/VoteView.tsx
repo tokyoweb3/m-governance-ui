@@ -13,7 +13,7 @@ interface Props {
   blockNumber: string;
 }
 interface VoteState {
-  vote_type?: number;
+  vote_type: number;
   approved?: string;
   creator?: string;
   vote_ends?: string 
@@ -37,7 +37,7 @@ interface VoteToString {
 // tx: ballot, conclude, lockvote, withdraw
 export default function VoteView({api, keyring, blockNumber}: Props) {
   const { id } = useParams();
-  const [voteState, setVoteState] = useState<VoteState>({});
+  const [voteState, setVoteState] = useState<VoteState>({vote_type: 0});
   const { vote_type, approved, creator, vote_ends, when, concluded, hash, aye, nay } = voteState;
   const panes = [
     { menuItem: {key: 'voteView', icon: 'info', content: 'VoteView'}, render: ()=> 
@@ -78,10 +78,10 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
     return () => unsubscribe && unsubscribe();
   }, [ id ])
 
-  const typeOfVote = (vote_type?: number) => {
+  const typeOfVote = (vote_type: any) => {
     switch(vote_type) {
-      case 0: return "Vote";
-      case 1: return "LockVote";
+      case '0': return "Vote";
+      case '1': return "LockVote";
       default: return "Undefined Vote";
     }
   }

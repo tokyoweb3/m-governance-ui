@@ -110,8 +110,8 @@ export default function App () {
             />
             </Route>
             <Route 
-              path="/certificate/:hash" 
-              children={<CertificateView />}
+              path="/certificate/:index/:hash" 
+              children={<CertificateView api={api} keyring={keyring}/>}
             />
             <Route path="/certificate">
               <Certificate

@@ -54,9 +54,9 @@ export default function CAListings ({api}: Props) {
         {hashState.map((hash: string, index: number) => {
           return (
             <Table.Row key={index}>
-              <Table.Cell textAlign='right'><Link to={`/certificate/0x${utils.Convert.ToHex(hash)}`}>{index+1}</Link>
+              <Table.Cell textAlign='right'><Link to={`/certificate/${index + 1}/${hash.toString()}`}>{index+1}</Link>
               </Table.Cell>
-              <Table.Cell>0x{utils.Convert.ToHex(hash)}</Table.Cell>
+              <Table.Cell>{hash.toString()}</Table.Cell>
             </Table.Row>
           );
         })}

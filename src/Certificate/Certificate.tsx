@@ -24,7 +24,7 @@ export default function Certificate ({ api, keyring }: Props) {
   const [wsReady, setWsReady] = useState(false);
   const [providerOptions, setProviderOptions] = useState<{key:string, value: string, text: string}[]>([]);
   const panes = [
-    { menuItem: {key: 'providers', icon: 'rss', content: 'Providers'}, render: ()=> <Tab.Pane><Provider ws={ws}/></Tab.Pane>},
+    { menuItem: {key: 'providers', icon: 'rss', content: 'Providers'}, render: ()=> <Tab.Pane><Provider ws={ws} wsReady={wsReady}/></Tab.Pane>},
     { menuItem: {key: 'register', icon: 'book', content: 'Register'}, render: ()=> <Tab.Pane><Register api={api} keyring={keyring} ws={ws} providerOptions={providerOptions}/></Tab.Pane>},
     { menuItem: {key: 'centralAuthority', icon: 'building', content: 'Central Authority'}, render: ()=> <Tab.Pane><CAListings api={api} /></Tab.Pane>},
     { menuItem: {key: 'registerCA', icon: 'building', content: 'Register CA'}, render: ()=> <Tab.Pane><RegisterCA api={api} keyring={keyring} /></Tab.Pane>},
@@ -96,22 +96,6 @@ export default function Certificate ({ api, keyring }: Props) {
       main();
     }
   }, [wsReady]);
-
-
-  if(!wsReady){
-    return (
-      <Segment>
-      <Dimmer active inverted>
-        <Loader size='large'>Connecting to WebcryptoSocket.
-        Please install Fortify to use this feature!
-        </Loader>
-        
-      </Dimmer>
-
-      <Image src='https://react.semantic-ui.com/images/wireframe/paragraph.png' />
-      </Segment>
-    );
-  }
 
   return(
     <>

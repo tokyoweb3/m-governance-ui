@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dropdown, Form, Table, DropdownProps, Segment} from 'semantic-ui-react';
+import { Button, Dropdown, Form, Table, DropdownProps, Segment, Dimmer, Loader, Image} from 'semantic-ui-react';
 
 declare function require(x: string): any;
 const jwkToPem = require('jwk-to-pem');
 const utils = require('pvtsutils');
 
-export default function Provider ({ws} : {ws: any}) {
+export default function Provider ({ws, wsReady} : {ws: any, wsReady: boolean}) {
   const initialOption = [
     {
     key: "None",
@@ -23,8 +23,10 @@ export default function Provider ({ws} : {ws: any}) {
   }
 
   useEffect(() => {
-    main();
-  }, [])
+    if(ws){
+      main();
+    }
+  }, [wsReady])
 
   const refresh = async () => {
     if(selectedProvider) {
@@ -211,6 +213,20 @@ export default function Provider ({ws} : {ws: any}) {
   }catch(e){console.error(e)}
   }
 
+  if(!wsReady){
+    return (
+      <Segment>
+      <Dimmer active inverted>
+        <Loader size='large'>Connecting to WebcryptoSocket.
+        Please install Fortify to use this feature!
+        </Loader>
+        
+      </Dimmer>
+
+      <Image src='https://react.semantic-ui.com/images/wireframe/paragraph.png' />
+      </Segment>
+    );
+  }
   return(
     <Segment>
       <h2>Enumerate providers and their contents</h2>
