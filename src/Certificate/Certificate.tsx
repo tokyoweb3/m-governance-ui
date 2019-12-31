@@ -23,9 +23,11 @@ export default function Certificate ({ api, keyring }: Props) {
   const [ws, setWs] = useState();
   const [wsReady, setWsReady] = useState(false);
   const [providerOptions, setProviderOptions] = useState<{key:string, value: string, text: string}[]>([]);
+  const [caOptions, setCaOptions] = useState<string[]>([]);
+
   const panes = [
     { menuItem: {key: 'providers', icon: 'rss', content: 'Providers'}, render: ()=> <Tab.Pane><Provider ws={ws} wsReady={wsReady}/></Tab.Pane>},
-    { menuItem: {key: 'register', icon: 'book', content: 'Register'}, render: ()=> <Tab.Pane><Register api={api} keyring={keyring} ws={ws} providerOptions={providerOptions}/></Tab.Pane>},
+    { menuItem: {key: 'register', icon: 'book', content: 'Register'}, render: ()=> <Tab.Pane><Register api={api} keyring={keyring} ws={ws} providerOptions={providerOptions} caOptions={caOptions}/></Tab.Pane>},
     { menuItem: {key: 'centralAuthority', icon: 'building', content: 'Central Authority'}, render: ()=> <Tab.Pane><CAListings api={api} /></Tab.Pane>},
     { menuItem: {key: 'registerCA', icon: 'building', content: 'Register CA'}, render: ()=> <Tab.Pane><RegisterCA api={api} keyring={keyring} /></Tab.Pane>},
   ];
@@ -39,6 +41,12 @@ export default function Certificate ({ api, keyring }: Props) {
       let body = document.getElementsByTagName('body')[0];
       body.appendChild(tag);
     }
+    let unsubscribe: () => any;
+    api.query.certificateModule.cAData((ca_data: string[]) =>{
+      setCaOptions(ca_data);
+    }).then((unsub: any) => {unsubscribe = unsub; })
+      .catch(console.error);
+    return () => unsubscribe && unsubscribe();
   },[]); 
 
   // get webcryptosocket

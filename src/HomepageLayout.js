@@ -210,7 +210,7 @@ const HomepageLayout = () => (
           From certificate tab, you can register your digital certificate to allow only those who have signed certificate to participate the voting. For example, you can register your country's national identity smart card to participate next municipal election voting process.
           You need Fortify app to interect with your smartcard. For more detail, please follow this link.
         </p>
-        <Link to="/certificate"><Button as='a' size='large'>
+        <Link to="/certificate"><Button size='large'>
           Register Certificate
         </Button></Link>
         <Divider

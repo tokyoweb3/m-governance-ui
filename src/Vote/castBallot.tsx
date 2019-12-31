@@ -60,7 +60,6 @@ export default function CastBallot({api, keyring, id, options}: Props) {
   }
   return(
     <Segment>
-      {console.log(formState)}
       <h1>Cast Ballot</h1>
       <Form>
         <Form.Field>

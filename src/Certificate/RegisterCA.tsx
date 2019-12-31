@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dropdown, Form, TextArea, TextAreaProps, DropdownProps, Segment, Message } from 'semantic-ui-react';
+import { Button, Dropdown, Form, TextArea, TextAreaProps, DropdownProps, Segment, Message, Input, InputOnChangeData } from 'semantic-ui-react';
 import {createPKIJSCertificate} from './pkijshelpers';
 import { stringPrep } from 'pkijs/src/common';
 const utils = require('pvtsutils');
@@ -24,10 +24,10 @@ export default function RegisterCA ({api, keyring}: Props) {
     text: account.meta.name.toUpperCase()
   }));
   const [message, setMessage] = useState({header: "", content:"", success:false, error:false, warning:false});
-  const [formState, setFormState] = useState<{addressFrom: string; pem: string}>({addressFrom: '', pem: ''});
-  const { addressFrom, pem } = formState;
+  const [formState, setFormState] = useState<{addressFrom: string; data: string; pem: string}>({addressFrom: '', data: '', pem: ''});
+  const { addressFrom, data, pem } = formState;
 
-  const onChange = (_: any, data: DropdownProps | TextAreaProps) => {
+  const onChange = (_: any, data: DropdownProps | TextAreaProps | InputOnChangeData) => {
     console.log(data.value);
       setFormState(FormState => {
         return {
@@ -45,7 +45,7 @@ export default function RegisterCA ({api, keyring}: Props) {
     console.log(hexThumbCA);
 
     await api.tx.certificateModule
-    .registerCa("0x"+hexThumbCA)
+    .registerCa("0x"+hexThumbCA, data)
     .signAndSend(fromPair, ({status}: Status) => {
       if (status.isFinalized) {
         setMessage({...message, header: 'Transaction Completed!', content:`Completed at block hash #${status.asFinalized.toString()}`, success:true});
@@ -75,6 +75,15 @@ export default function RegisterCA ({api, keyring}: Props) {
             selection
             state='addressFrom'
             options={keyringOptions}
+        />
+      </Form.Field>
+      <Form.Field>
+        <Input
+          label='Data'
+          fluid
+          onChange={onChange}
+          state='data'
+          type='string'
         />
       </Form.Field>
       <Form.Field

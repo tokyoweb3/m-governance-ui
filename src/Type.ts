@@ -24,6 +24,10 @@ const types ={
   "Certification": {
     "cert": "Hash",
     "signature": "Hash"
+  },
+  "CentralAuthority": {
+    "ca_hash": "Hash",
+    "data": "Vec<u8>"
   }
 }
 

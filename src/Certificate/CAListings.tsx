@@ -27,7 +27,7 @@ export default function CAListings ({api}: Props) {
 
   useEffect(() => {
     let unsubscribe: () => any;
-    api.query.certificateModule.cAHashes(0, (caHashes: string[]) => {
+    api.query.certificateModule.cAHashes((caHashes: string[]) => {
       setCaCount(caHashes.length);
       setHashState(caHashes);
     })

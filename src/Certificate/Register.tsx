@@ -4,12 +4,14 @@ import { cAPem } from './pemCerts';
 import {createPKIJSCertificate} from './pkijshelpers';
 const utils = require('pvtsutils');
 const pkiJS = require('pkijs');
+const helper = require('../Vote/helper.tsx');
 
 interface Props {
   api: any;
   keyring: any;
   ws: any;
   providerOptions: any;
+  caOptions: string[];
 }
 interface Status{
   status: {
@@ -23,12 +25,19 @@ interface Options{
   value: string;
   text: string;
 }
-export default function Register ({api, keyring, ws, providerOptions}: Props) {
+export default function Register ({api, keyring, ws, providerOptions, caOptions}: Props) {
   const keyringOptions = keyring.getPairs().map((account: { address: any; meta: { name: string; }; }) => ({
     key: account.address,
     value: account.address,
     text: account.meta.name.toUpperCase()
   }));
+  // const CAOptions = caOptions.map((v, i) => ({
+  //   key: i,
+  //   value: i,
+  //   text: helper.hex2a(v)
+  // }));
+
+  // TODO: save Pem file in blockchain or db. 
   const CAOptions = Object.keys(cAPem).map((key, index) => ({
     key,
     value: index,

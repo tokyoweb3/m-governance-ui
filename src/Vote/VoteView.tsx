@@ -7,6 +7,8 @@ import CastBallot from './castBallot';
 import ConcludeVote from './concludeVote';
 import ResultChart from './ResultChart';
 
+const helper = require('./helper.tsx');
+
 interface Props {
   api: any;
   keyring: any;
@@ -19,7 +21,7 @@ interface VoteState {
   vote_ends?: string 
   when?: string
   concluded?: string
-  hash?: string
+  data?: string
 }
 interface VoteToString {
   vote_type:  {toString: () => any};
@@ -36,7 +38,7 @@ interface VoteToString {
 export default function VoteView({api, keyring, blockNumber}: Props) {
   const { id } = useParams();
   const [voteState, setVoteState] = useState<VoteState>({vote_type: 0});
-  const { vote_type, approved, creator, vote_ends, when, concluded, hash } = voteState;
+  const { vote_type, approved, creator, vote_ends, when, concluded, data } = voteState;
   const [optionState, setOptionState] = useState<string[]>([]);
   const [accounts, setAccounts] = useState<string[][]>([]);
 
@@ -57,9 +59,9 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
     let unsubscribe: () => any;
     const f = async () => { await api.queryMulti([
       [api.query.governanceModule.votesByIndex, id],
-      [api.query.governanceModule.voteIndexHash, id],
+      [api.query.governanceModule.data, id],
       [api.query.governanceModule.voteOptions, id],
-    ], ([vote, hash, options]:[VoteToString, string, string[] ]) => {
+    ], ([vote, data, options]:[VoteToString, string, string[] ]) => {
       setVoteState({
         vote_type: vote.vote_type.toString(),
         approved: vote.approved.toString(),
@@ -67,7 +69,7 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
         when: vote.when.toString(),
         vote_ends: vote.vote_ends.toString(),
         concluded: vote.concluded.toString(),
-        hash: hash.toString(),
+        data: helper.hex2a(data),
       });
       setOptionState(options);
       getAccounts(options);
@@ -94,13 +96,6 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
       default: return "Undefined Vote";
     }
   }
-  function hex2a(hexx: any) {
-    var hex = hexx.toString();//force conversion
-    var str = '';
-    for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2)
-        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-    return str;
-  }
 
   const voteView = () => {
     return(
@@ -110,7 +105,7 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
 
       <h1 style={{clear:'both'}}>Vote#{id}</h1>
       <ul style={{listStyleType:"none"}}>
-        <li>Hash: {hash}</li>
+        <li>Data: {data}</li>
         <li>CreatedAt# {when}</li>
         <li>Creator: {creator}</li>
         <li>VoteType: {typeOfVote(vote_type)}</li>
@@ -122,7 +117,7 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
             {optionState.map((option, index) => {
               return(
                 <li key={index}>
-                  <ul>{hex2a(option)}: {accounts[index] && accounts[index].length}
+                  <ul>{helper.hex2a(option)}: {accounts[index] && accounts[index].length}
                     {accounts[index] && accounts[index].map((account, i)=>{
                       return (
                       <li key={i}>
@@ -134,9 +129,7 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
                 </li>
               )
             })}
-
           </ul>
-
         </li>
       </ul>
       </Segment>

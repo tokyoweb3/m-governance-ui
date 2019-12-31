@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Segment, Tab } from 'semantic-ui-react';
+const helper = require('../Vote/helper.tsx');
 
 interface Props {
   api: any;
@@ -10,12 +11,23 @@ interface Props {
 export default function CertificateView({api, keyring}: Props) {
   const { index, hash } = useParams();
   const [accounts, setAccounts] = useState<string[]>([]);
+  const [data, setData] = useState<string>();
 
   useEffect(() => {
     let unsubscribe: () => any;
-    api.query.certificateModule.accountsByCAHash(hash, (accounts: string[]) => {
-      setAccounts(accounts);
-    })
+    const f = async() => {
+      await api.queryMulti([
+        [api.query.certificateModule.accountsByCAHash, hash],
+        [api.query.certificateModule.cADataByIndex, index],
+      ], ([accounts, data]:[string[], string]) => {
+        setAccounts(accounts);
+        setData(helper.hex2a(data));
+      })
+    }
+    // api.query.certificateModule.accountsByCAHash(hash, (accounts: string[]) => {
+    //   setAccounts(accounts);
+    // })
+    f()
     .then((unsub: any) => { unsubscribe = unsub; })
     .catch(console.error);
 
@@ -23,11 +35,11 @@ export default function CertificateView({api, keyring}: Props) {
   }, [])
 
   return(
-    <Segment.Group>    
+    <Segment.Group>
       <h1>CertificateView #{index}</h1>
       <ul>
         <li>Hash: {hash}</li>
-        <li>Provider: db.hash.provider</li>
+        <li>Data: {data}</li>
         <li>Pem: db.hash.pem</li>
         <li>そのたいろいろ情報</li>
         <li>Accounts: {accounts.length}
