@@ -1,25 +1,31 @@
 import React, {useState} from 'react';
 import { Button, Dropdown, Form, DropdownProps, Message, Segment } from 'semantic-ui-react';
+const helper = require('./helper.tsx');
 
 interface Props {
   api: any;
   keyring: any;
   id: string| undefined;
+  options: string[];
+}
+interface Form {
+  addressFrom:string;
+  reference_id?: string;
+  ballot?: number;
 }
 
-export default function CastBallot({api, keyring, id}: Props) {
+export default function CastBallot({api, keyring, id, options}: Props) {
   const [message, setMessage] = useState({header: "", content:"", success:false, error:false, warning:false});
   const initialState = {
     addressFrom: '',
     reference_id: id,
-    ballot: ''
   };
-  const [formState, setFormState] = useState(initialState);
+  const [formState, setFormState] = useState<Form>(initialState);
   const { addressFrom, reference_id, ballot } = formState;
-  const ballotOptions = [
-    {key: "Aye", value: "Aye", text: "Aye"},
-    {key: "Nay", value: "Nay", text: "Nay"}
-  ];
+  const ballotOptions = options.map((v,i)=>{
+    return {key: i, value: i, text: helper.hex2a(v)}
+  });
+
   const keyringOptions = keyring.getPairs().map((account:{address: string; meta:{name: string}}) => ({
       key: account.address,
       value: account.address,
@@ -27,7 +33,7 @@ export default function CastBallot({api, keyring, id}: Props) {
   }));
 
   const onChange = (_: any, data: DropdownProps) => {
-    setFormState(FormState => {
+    setFormState((FormState:Form) => {
       return {
         ...FormState,
         [data.state]: data.value
@@ -40,7 +46,7 @@ export default function CastBallot({api, keyring, id}: Props) {
     setMessage({...message, header: 'Just one second', content: 'Sending...', warning: true});
 
     api.tx.governanceModule
-    .castBallot(reference_id, ballot)
+    .castBallotWithOptions(reference_id, ballot)
     .signAndSend(fromPair, ({status}: {status:{isFinalized: boolean; asFinalized: string; type: string; }}) => {
       if (status.isFinalized) {
         setMessage({...message, header: 'Transaction Completed!', content:`Completed at block hash #${status.asFinalized.toString()}`, success:true});
@@ -54,6 +60,7 @@ export default function CastBallot({api, keyring, id}: Props) {
   }
   return(
     <Segment>
+      {console.log(formState)}
       <h1>Cast Ballot</h1>
       <Form>
         <Form.Field>

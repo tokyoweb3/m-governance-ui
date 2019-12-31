@@ -44,7 +44,7 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
     { menuItem: {key: 'voteView', icon: 'info', content: 'VoteView'}, render: ()=> 
     <Tab.Pane>
       {voteView()}
-      <CastBallot api={api} keyring={keyring} id={id}/>
+      <CastBallot api={api} keyring={keyring} id={id} options={optionState}/>
       <ResultChart options={optionState} accounts={accounts}/>
     </Tab.Pane>},
     { menuItem: {key: 'conclude', icon: 'check circle', content: 'Conclude'}, render: ()=> <Tab.Pane>
