@@ -1,16 +1,13 @@
 import React from 'react';
 import {Doughnut} from 'react-chartjs-2';
+const helper = require('./helper.tsx');
 
 
-
-export default function ResultChart({aye, nay}: {aye:string[]; nay: string[]}){
+export default function ResultChart({options, accounts}: {options:string[]; accounts: string[][]}){
   const data = {
-    labels: [
-      'Aye',
-      'Nay',
-    ],
+    labels: options.map(v=> helper.hex2a(v)),
     datasets: [{
-      data: [aye && aye.length, nay && nay.length],
+      data: accounts.map(v => v.length),
       backgroundColor: [
       '#FF6384',
       '#36A2EB',
