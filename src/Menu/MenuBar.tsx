@@ -16,38 +16,38 @@ export default function MenuBar() {
           <Icon name='home' />
           Home
       </Menu.Item>
-        <Menu.Item 
-        as={Link} to='/vote' name='vote'
-        active={activeItem === 'vote'}
-        onClick={handleItemClick}>
-            <Icon name='th' />
-            Vote
-        </Menu.Item>
-        <Menu.Item 
-        as={Link} to='/ballot' name='ballot'
-        active={activeItem === 'ballot'}
-        onClick={handleItemClick}>
-            <Icon name='inbox' />
-            Ballot
-        </Menu.Item>
-        <Menu.Item 
-        as={Link} to='/transfer' name='transfer'
-        active={activeItem === 'transfer'}
-        onClick={handleItemClick}>
-            <Icon name='paper plane' />
-            Transfer
-        </Menu.Item>
-        <Menu.Item 
-        as={Link} to='/certificate' name='certificate'
-        active={activeItem === 'certificate'}
-        onClick={handleItemClick}>
-            <Icon name='certificate' />
-            Certificate
-        </Menu.Item>
+      <Menu.Item 
+      as={Link} to='/tutorial' name='tutorial'
+      active={activeItem === 'tutorial'}
+      onClick={handleItemClick}>
+          <Icon name='inbox' />
+          Tutorial
+      </Menu.Item>
+      <Menu.Item 
+      as={Link} to='/vote' name='vote'
+      active={activeItem === 'vote'}
+      onClick={handleItemClick}>
+          <Icon name='th' />
+          Vote
+      </Menu.Item>
+      <Menu.Item 
+      as={Link} to='/transfer' name='transfer'
+      active={activeItem === 'transfer'}
+      onClick={handleItemClick}>
+          <Icon name='paper plane' />
+          Transfer
+      </Menu.Item>
+      <Menu.Item 
+      as={Link} to='/certificate' name='certificate'
+      active={activeItem === 'certificate'}
+      onClick={handleItemClick}>
+          <Icon name='certificate' />
+          Certificate
+      </Menu.Item>
 
-        <Menu.Item>
-          <Input icon='search' placeholder='Vote ID...' />
-        </Menu.Item>
+      <Menu.Item>
+        <Input icon='search' placeholder='Vote ID...' />
+      </Menu.Item>
     </Menu>
   );
 }

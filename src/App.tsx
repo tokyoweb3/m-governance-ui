@@ -18,6 +18,7 @@ import CreateVote from './Vote/createVote';
 import VoteListings from './Vote/VoteListings';
 import VoteView from './Vote/VoteView';
 import Certificate from './Certificate/Certificate';
+import Tutorial from './Tutorial/Tutorial';
 
 import 'semantic-ui-css/semantic.min.css'
 import CertificateView from './Certificate/CertificateView';
@@ -96,8 +97,8 @@ export default function App () {
             />
             </Route>
 
-            <Route path="/ballot">
-              <h3>Ballot</h3>
+            <Route path="/tutorial">
+              <Tutorial />
             </Route>
             <Route path="/transfer">
             <Balances
