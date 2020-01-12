@@ -24,9 +24,6 @@ export default function CertificateView({api, keyring}: Props) {
         setData(helper.hex2a(data));
       })
     }
-    // api.query.certificateModule.accountsByCAHash(hash, (accounts: string[]) => {
-    //   setAccounts(accounts);
-    // })
     f()
     .then((unsub: any) => { unsubscribe = unsub; })
     .catch(console.error);

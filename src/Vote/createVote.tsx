@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData, Segment, Message, ButtonContentProps } from 'semantic-ui-react';
+const helper = require('./helper.tsx');
 
 interface Status{
   status: {
@@ -15,6 +16,11 @@ interface Form {
   data: string;
   approved: number;
 }
+const voteTypeOptions = [
+  {key: 0, value: 0, text: 'Normal Vote'},
+  {key: 1, value: 1, text: 'Lock Vote'},
+  {key: 2, value: 2, text: 'Quadratic Vote'}
+];
 
 export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
   const [message, setMessage] = useState({header: "", content:"", success:false, error:false, warning:false});
@@ -28,7 +34,8 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
     };
     const [formState, setFormState] = useState<Form>(initialState);
     const { addressFrom, voteType, expLength, data, approved } = formState;
-    const[vals, setVals] = useState<any[]>([]);
+    const[ vals, setVals ] = useState<any[]>([]);
+    const [ caOptions, setCaOptions ] = useState<{key: any; value: any; text: string;}[]>([]);
 
     const keyringOptions = keyring.getPairs().map((account: { address: any; meta: { name: string; }; }) => ({
         key: account.address,
@@ -54,6 +61,32 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
       })
     }
 
+    // get CA list
+    useEffect(() => {
+      let unsubscribe: () => any;
+      api.query.certificateModule.cAData((dataList: number[])=> {
+        for (let index in dataList) {
+          setCaOptions(prev => {
+            return[
+              ...prev,
+              {
+                key: index,
+                value: index,
+                text: helper.hex2a(dataList[index])
+              }
+            ]
+          })
+        }
+      })
+      .then((unsub: any) => { 
+        unsubscribe = unsub; 
+        
+      })
+      .catch(console.error);
+  
+      return () => unsubscribe && unsubscribe();
+    }, [])
+
     const createVote = () => {
         const fromPair = keyring.getPair(addressFrom);
         const options:string[] = Object.values(vals).map(val => val)
@@ -73,6 +106,7 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
         });
     }
 
+    // options
     const [count, setCount] = useState<number>(0);
     // add or remove option input
     const onClickOption= (_: any, data: ButtonContentProps) => {
@@ -97,14 +131,17 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
                 />
                 </Form.Field>
                 <Form.Field>
-                <Input
-                    onChange={onChange}
-                    label='VoteType'
+                <Dropdown
+                    placeholder='Select Vote type'
                     fluid
-                    placeholder='voteType: u8'
+                    label="VoteType"
+                    onChange={onChange}
+                    search
+                    selection
                     state='voteType'
-                    type='number'
+                    options={voteTypeOptions}
                 />
+
                 </Form.Field>
                 <Form.Field>
                 <Input
@@ -117,16 +154,18 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
                 />
                 </Form.Field>
 
-                {/* TODO: Selection of index of CAHash */}
                 <Form.Field>
-                <Input
-                    label='Approved'
+                <Dropdown
+                    placeholder='Select CA from the list'
                     fluid
+                    label="Approved"
                     onChange={onChange}
+                    search
+                    selection
                     state='approved'
-                    placeholder="CA Index: u64"
-                    type='number'
+                    options={caOptions}
                 />
+
                 </Form.Field>
                 <Form.Field>
                 <Input
