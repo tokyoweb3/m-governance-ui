@@ -31,18 +31,12 @@ export default function Register ({api, keyring, ws, providerOptions, caOptions}
     value: account.address,
     text: account.meta.name.toUpperCase()
   }));
-  // const CAOptions = caOptions.map((v, i) => ({
-  //   key: i,
-  //   value: i,
-  //   text: helper.hex2a(v)
-  // }));
+  const CAOptions = caOptions.map((v, i) => ({
+    key: i,
+    value: i,
+    text: helper.hex2a(v)
+  }));
 
-  // TODO: save Pem file in blockchain or db. 
-  const CAOptions = Object.keys(cAPem).map((key, index) => ({
-    key,
-    value: index,
-    text: key
-  }))
   const [status, setStatus] = useState('');
 
   const initialState = {
@@ -190,13 +184,14 @@ export default function Register ({api, keyring, ws, providerOptions, caOptions}
     const item = await crypto.certStorage.getItem(certificateIndex);
     const userPem = await crypto.certStorage.exportCert("PEM", item);
 
-    const userAuth = createPKIJSCertificate(userPem);
-    const caPem = Object.values(cAPem)[CAIndex];
-    const userCA = createPKIJSCertificate(caPem);
+    const userRaw = createPKIJSCertificate(userPem);
+    const caPem2 = await api.query.certificateModule.cAStore(CAIndex+1);
+
+    const caRaw = createPKIJSCertificate(helper.hex2a(caPem2));
   
     const chainValidator = new pkiJS.CertificateChainValidationEngine({
-      certs: [userAuth],
-      trustedCerts: [userCA]
+      certs: [userRaw],
+      trustedCerts: [caRaw]
     });
   
     const { result, resultCode, resultMessage } = await chainValidator.verify();
@@ -239,9 +234,10 @@ export default function Register ({api, keyring, ws, providerOptions, caOptions}
     const thumbCert = await crypto.subtle.digest("SHA-256", rawCert);
     const hexThumbCert = utils.Convert.ToHex(thumbCert);
 
-    const caPem = Object.values(cAPem)[CAIndex];
-    const userCA = createPKIJSCertificate(caPem);
-    const thumbCA = await crypto.subtle.digest("SHA-256", userCA.tbs);
+    const caPem = await api.query.certificateModule.cAStore(CAIndex+1);
+
+    const caRaw = createPKIJSCertificate(helper.hex2a(caPem));
+    const thumbCA = await crypto.subtle.digest("SHA-256", caRaw.tbs);
     const hexThumbCA = utils.Convert.ToHex(thumbCA);
     
     // console.log(thumbCert);

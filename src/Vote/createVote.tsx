@@ -93,7 +93,7 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
         setMessage({...message, header: 'Just one second', content: 'Sending...', warning: true});
         
         api.tx.governanceModule
-        .createVote(voteType, expLength, data, approved, options)
+        .createVote(voteType, expLength, data, approved+1, options)
         .signAndSend(fromPair, ({status}: Status) => {
           if (status.isFinalized) {
             setMessage({...message, header: 'Transaction Completed!', content:`Completed at block hash #${status.asFinalized.toString()}`, success:true});
