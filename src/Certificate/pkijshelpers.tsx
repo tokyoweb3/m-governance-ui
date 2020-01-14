@@ -21,4 +21,4 @@ function convertPemToArrayBuffer(pemString: string) {
   return new Uint8Array(buffer).buffer;
 }
 
-export {createPKIJSCertificate};
+export {createPKIJSCertificate, removePemArmoring};

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Dropdown, Form, TextArea, TextAreaProps, DropdownProps, Segment, Message, Input, InputOnChangeData } from 'semantic-ui-react';
-import {createPKIJSCertificate} from './pkijshelpers';
-import { stringPrep } from 'pkijs/src/common';
+import {createPKIJSCertificate, removePemArmoring} from './pkijshelpers';
 const utils = require('pvtsutils');
 const pkiJS = require('pkijs');
 
@@ -28,7 +27,6 @@ export default function RegisterCA ({api, keyring}: Props) {
   const { addressFrom, data, pem } = formState;
 
   const onChange = (_: any, data: DropdownProps | TextAreaProps | InputOnChangeData) => {
-    console.log(data.value);
       setFormState(FormState => {
         return {
           ...FormState,
@@ -43,9 +41,12 @@ export default function RegisterCA ({api, keyring}: Props) {
     const thumbCA = await crypto.subtle.digest("SHA-256", rawCA.tbs);
     const hexThumbCA = utils.Convert.ToHex(thumbCA);
     console.log(hexThumbCA);
-
+    console.log(rawCA.tbs);
+    const unarmored = removePemArmoring(pem);
+    console.log(unarmored);
+    
     await api.tx.certificateModule
-    .registerCa("0x"+hexThumbCA, data)
+    .registerCa("0x"+hexThumbCA, unarmored, data)
     .signAndSend(fromPair, ({status}: Status) => {
       if (status.isFinalized) {
         setMessage({...message, header: 'Transaction Completed!', content:`Completed at block hash #${status.asFinalized.toString()}`, success:true});

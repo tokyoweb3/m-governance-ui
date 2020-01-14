@@ -107,7 +107,7 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
     }
 
     // options
-    const [count, setCount] = useState<number>(0);
+    const [count, setCount] = useState<number>(2);
     // add or remove option input
     const onClickOption= (_: any, data: ButtonContentProps) => {
       setCount(data.state==='add'?count+1 : count-1);
@@ -176,6 +176,7 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
                     type='string'
                 />
                 </Form.Field>
+                <Form.Field>
                 <div className='ui--Param-Vector-buttons'>
                   <Button
                     primary
@@ -193,6 +194,7 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
                     icon='minus'
                   />
                 </div>
+                <div>
                 {[...Array(count).keys()].map(x=> ++x).map((val, i)=>{
                   return(
                     <Input
@@ -206,6 +208,9 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
                     />
                   )
                 })}
+                </div>
+                </Form.Field>
+
                 <Form.Field>
                 <Button
                     onClick={createVote}

@@ -156,17 +156,16 @@ const HomepageLayout = () => (
         <Grid.Row>
           <Grid.Column width={8}>
             <Header as='h3' style={{ fontSize: '2em' }}>
-              Vote that can scale with existing blockchain. Modular and fully customizable.
+              Vote that can scale with existing blockchains. Modular and fully customizable.
             </Header> 
             <p style={{ fontSize: '1.33em' }}>
-              We can give your company superpowers to do things that they never thought possible.
-              Let us delight your customers and empower your needs... through pure data analytics.
+              M-Governance is both an independent blockchain and one of many parachains on Polkadot, which is the next Internet of Blockchain.
             </p>
             <Header as='h3' style={{ fontSize: '2em' }}>
-              We provide flexible voting platform with maximum benefit from next Internet Polkadot.
+              Flexible and Customizable
             </Header>
             <p style={{ fontSize: '1.33em' }}>
-              Yes that's right. The voting result can be subscribed to automatically trigger next move on different blockchain. This is possible because data on M-Governance is validated through Polkadot and forwarded to other blockchain.
+              You can choose cutting-edge voting mechanisms which best fit your needs.
             </p>
           </Grid.Column>
           <Grid.Column floated='right' width={6}>
@@ -175,7 +174,9 @@ const HomepageLayout = () => (
         </Grid.Row>
         <Grid.Row>
           <Grid.Column textAlign='center'>
-            <Button size='huge'>Check Them Out</Button>
+            <Link to="/tutorial"><Button size='huge'>Go to Tutorial
+              <Icon name='right arrow' />
+            </Button></Link>
           </Grid.Column>
         </Grid.Row>
       </Grid>
@@ -185,17 +186,18 @@ const HomepageLayout = () => (
         <Grid.Row textAlign='center'>
           <Grid.Column style={{ paddingBottom: '5em', paddingTop: '5em' }}>
             <Header as='h3' style={{ fontSize: '3em' }}>
-              "What a Company"
+              Compatible with many parachains on Polkadot
             </Header>
-            <p style={{ fontSize: '2em' }}>That is what they all say about us</p>
+            <p style={{ fontSize: '2em' }}>Validated voting result can be used to trigger next event through Polkadot. </p>
           </Grid.Column>
           <Grid.Column style={{ paddingBottom: '5em', paddingTop: '5em' }}>
             <Header as='h3' style={{ fontSize: '3em' }}>
-              "I shouldn't have gone with their competitor."
+              Various voting tools and models
             </Header>
             <p style={{ fontSize: '2em' }}>
-              <Image avatar src={image2} />
-              <b>Rick</b> Chief Technology Officer
+              Quadratic Voting, Lock Voting, Normal Voting
+              {/* <Image avatar src={image2} />
+              <b>Rick</b> Chief Technology Officer */}
             </p>
           </Grid.Column>
         </Grid.Row>
