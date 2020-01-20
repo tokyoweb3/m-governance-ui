@@ -10,7 +10,6 @@ interface Props {
   api: any;
   keyring: any;
   ws: any;
-  providerOptions: any;
   caOptions: string[];
 }
 interface Status{
@@ -25,7 +24,7 @@ interface Options{
   value: string;
   text: string;
 }
-export default function Register ({api, keyring, ws, providerOptions, caOptions}: Props) {
+export default function Register ({api, keyring, ws, caOptions}: Props) {
   const keyringOptions = keyring.getPairs().map((account: { address: any; meta: { name: string; }; }) => ({
     key: account.address,
     value: account.address,
@@ -55,6 +54,7 @@ export default function Register ({api, keyring, ws, providerOptions, caOptions}
   const [requirements, setRequirements] = useState<{verified: boolean; validated: boolean; }>({verified: false, validated: false});
   const { verified, validated } = requirements;
   const [validateStatus, setValidateStatus] = useState("");
+  const [providerOptions, setProviderOptions] = useState<{key:string, value: string, text: string}[]>([]);
 
   const onChange = (_: any, data: DropdownProps) => {
     console.log(data.value);
@@ -68,6 +68,24 @@ export default function Register ({api, keyring, ws, providerOptions, caOptions}
   const onChangeProvider = async (_: any, data: DropdownProps) => {
     setSelectedProvider(data.value);
     getItems(data.value);
+  }
+
+  const getProviders = async() => {
+    ws.info()
+      .then((info: { providers: [{id: string; name: string}];}) => {
+        setProviderOptions([]);
+        for (const index in info.providers){
+          setProviderOptions(oldValues => {
+            return [
+            ...oldValues,
+            {
+              key: info.providers[index].id,
+              value: info.providers[index].id,
+              text: info.providers[index].name
+            }]
+          });
+        }
+      });
   }
 
   const signAccount = async () => {
@@ -279,11 +297,14 @@ export default function Register ({api, keyring, ws, providerOptions, caOptions}
         if(selectedProvider){
           await getItems(selectedProvider);
         }
+        await getProviders();
     });
   }
 
   useEffect(() => {
-    main();
+    if(ws){
+      main();
+    }
   }, [])
 
   // const lineMaker = (str: string) =>{

@@ -22,12 +22,6 @@ export default function Provider ({ws, wsReady} : {ws: any, wsReady: boolean}) {
     setSelectedProvider(data.value?.toString());
   }
 
-  useEffect(() => {
-    if(ws){
-      main();
-    }
-  }, [wsReady])
-
   const refresh = async () => {
     if(selectedProvider) {
       getItems(selectedProvider);
@@ -51,9 +45,9 @@ export default function Provider ({ws, wsReady} : {ws: any, wsReady: boolean}) {
           await ws.login();
         }
         await fillProviders();
-        if(selectedProvider){
-          await getItems(selectedProvider);
-        }
+        // if(selectedProvider){
+        //   await getItems(selectedProvider);
+        // }
         ws.cardReader
           .on("insert", fillProviders)
           .on("remove", fillProviders);
@@ -100,7 +94,6 @@ export default function Provider ({ws, wsReady} : {ws: any, wsReady: boolean}) {
     }
 
     let indexes = await crypto.certStorage.keys();
-
     let pubKey;
 
     setItems([]);
@@ -210,8 +203,20 @@ export default function Provider ({ws, wsReady} : {ws: any, wsReady: boolean}) {
     // document.body.appendChild(downloadAnchorNode); // required for firefox
     // downloadAnchorNode.click();
     // downloadAnchorNode.remove();
-  }catch(e){console.error(e)}
+   }catch(e){console.error(e)}
   }
+
+  useEffect(() => {
+    let unsubscribe: () => any;
+    if(ws){
+      main()
+      .then((unsub: any) => { 
+        unsubscribe = unsub; 
+      })
+      .catch(console.error);
+    }
+    return () => unsubscribe && unsubscribe();
+  }, [wsReady, ])
 
   if(!wsReady){
     return (
