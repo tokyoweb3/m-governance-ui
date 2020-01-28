@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import { Segment } from 'semantic-ui-react';
+import { Segment, Image, Grid } from 'semantic-ui-react';
+import logo from '../images/logo.png';
 
 interface Props {
   api: {rpc: any; };
@@ -34,11 +35,29 @@ export default function NodeInfo({api, blockNumber}: Props) {
   },[]);
   
   return (
-    <Segment>
-      {nodeInfo.chain} - {nodeInfo.nodeName} (v{nodeInfo.nodeVersion})
-      <br/>
-      {`#CurrentBlock: ${blockNumber}`}
-      <hr/>
+    <Segment className='info'>
+      <Grid colums={2}>
+          <Grid.Column style={{padding:'0', paddingTop:'5px'}}>
+            <Image circular centered src={logo}/>
+          </Grid.Column>
+          <Grid.Column width={5}>
+            <Grid.Row>
+              <div className='chain' style={{fontSize:'16px'}}>
+                M-Governance
+              </div>
+            </Grid.Row>
+            <Grid.Row>
+              <div className='chain' style={{fontSize:'16px'}}>
+                {nodeInfo.chain} - {nodeInfo.nodeName} (ver. {nodeInfo.nodeVersion})
+              </div>
+            </Grid.Row>
+            <Grid.Row>
+              <div className='blockNumber' style={{fontSize:'16px', fontWeight:'bold'}}>
+                {`# ${blockNumber}`}
+              </div>
+            </Grid.Row>
+          </Grid.Column>
+      </Grid>
     </Segment>
   )
 }

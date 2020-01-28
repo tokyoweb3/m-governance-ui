@@ -19,13 +19,13 @@ export default function Footer() {
           <Grid.Column width={3}>
             <Header inverted as='h4' content='Sources' />
             <List link inverted>
-              <List.Item as='a' href='https://github.com/MasakiMinamide/M-Governance'>
+              <List.Item as='a' href='https://github.com/MasakiMinamide/M-Governance' target="_blank">
               <List.Icon name='github' size='large' verticalAlign='middle' />M-Governance</List.Item>
-              <List.Item as='a' href='https://github.com/MasakiMinamide/m-governance-ui'>
+              <List.Item as='a' href='https://github.com/MasakiMinamide/m-governance-ui' target="_blank">
               <List.Icon name='github' size='large' verticalAlign='middle' />UI</List.Item>
-              <List.Item as='a' href='https://github.com/paritytech/polkadot'>
+              <List.Item as='a' href='https://github.com/paritytech/polkadot' target="_blank">
               <List.Icon name='github' size='large' verticalAlign='middle' />Polkadot</List.Item>
-              <List.Item as='a' href='https://github.com/paritytech/substrate'>
+              <List.Item as='a' href='https://github.com/paritytech/substrate' target="_blank">
               <List.Icon name='github' size='large' verticalAlign='middle' />Substrate</List.Item>
             </List>
           </Grid.Column>
@@ -33,8 +33,8 @@ export default function Footer() {
             <Header as='h4' inverted>
               Creator: Masaki Minamide
             </Header>
-            <p><Icon name='github'/><a href='https://github.com/MasakiMinamide'>Github</a></p>
-            <p><Icon name='twitter'/><a href='https://twitter.com/masakiminamide'>Twitter</a></p>
+            <p><Icon name='github'/><a href='https://github.com/MasakiMinamide' target="_blank">Github</a></p>
+            <p><Icon name='twitter'/><a href='https://twitter.com/masakiminamide' target="_blank">Twitter</a></p>
           </Grid.Column>
         </Grid.Row>
       </Grid>

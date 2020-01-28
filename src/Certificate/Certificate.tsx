@@ -6,7 +6,11 @@ import Provider from './Provider';
 import Register from './Register';
 import RegisterCA from './RegisterCA';
 import CAListings from './CAListings';
-// import WebcryptoSocket from '@webcrypto-local/client';
+
+// var protobuf = require("protobufjs");
+// var WebcryptoSocket = require("@webcrypto-local/client");
+// console.log(protobuf);
+
 const urls = ["https://peculiarventures.github.io/pv-webcrypto-tests/src/asmcrypto.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/elliptic.js", "https://cdn.rawgit.com/dcodeIO/protobuf.js/6.8.0/dist/protobuf.js", "https://unpkg.com/@webcrypto-local/client@1.0.14/build/webcrypto-socket.js", "https://peculiarventures.github.io/pv-webcrypto-tests/src/webcrypto-liner.min.js", "https://cdn.rawgit.com/jakearchibald/idb/97e4e878/lib/idb.js"];
 
 interface Props {

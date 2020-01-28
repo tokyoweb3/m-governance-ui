@@ -41,7 +41,7 @@ export default function CertificateView({api, keyring}: Props) {
     }
       f()
       .then((unsub: any) => { 
-        unsubscribe = unsub; 
+        unsubscribe = unsub;
         console.log(rawCA);
       })
       .catch(console.error);
