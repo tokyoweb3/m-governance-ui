@@ -40,7 +40,10 @@ export default function CertificateView({api, keyring}: Props) {
       })
     }
       f()
-      .then((unsub: any) => { unsubscribe = unsub; })
+      .then((unsub: any) => { 
+        unsubscribe = unsub; 
+        console.log(rawCA);
+      })
       .catch(console.error);
 
     return () => unsubscribe && unsubscribe();
@@ -51,7 +54,6 @@ export default function CertificateView({api, keyring}: Props) {
   }
   return(
     <Segment>
-      {console.log(rawCA)}
       <h1>CertificateView #{index}</h1>
       <ul>
         <li>Hash: {hash}</li>

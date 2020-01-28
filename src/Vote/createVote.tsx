@@ -35,7 +35,7 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
     const [formState, setFormState] = useState<Form>(initialState);
     const { addressFrom, voteType, expLength, data, approved } = formState;
     const[ vals, setVals ] = useState<any[]>([]);
-    const [ caOptions, setCaOptions ] = useState<{key: any; value: any; text: string;}[]>([]);
+    const [ caOptions, setCaOptions ] = useState<{key: any; value: any; text: string;}[]>([{key: -1, value: -1, text: 'Permissionless'}]);
 
     const keyringOptions = keyring.getPairs().map((account: { address: any; meta: { name: string; }; }) => ({
         key: account.address,
@@ -66,6 +66,7 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
       let unsubscribe: () => any;
       api.query.certificateModule.cAData((dataList: number[])=> {
         for (let index in dataList) {
+          if (parseInt(index) >= 0) {
           setCaOptions(prev => {
             return[
               ...prev,
@@ -76,11 +77,11 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
               }
             ]
           })
+          }
         }
       })
       .then((unsub: any) => { 
         unsubscribe = unsub; 
-        
       })
       .catch(console.error);
   
