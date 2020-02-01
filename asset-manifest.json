@@ -1,27 +1,27 @@
 {
   "files": {
-    "main.js": "http;//masakiminamide.github.io/m-governance/static/js/main.53e98836.chunk.js",
-    "main.js.map": "http;//masakiminamide.github.io/m-governance/static/js/main.53e98836.chunk.js.map",
-    "runtime-main.js": "http;//masakiminamide.github.io/m-governance/static/js/runtime-main.fe959f08.js",
-    "runtime-main.js.map": "http;//masakiminamide.github.io/m-governance/static/js/runtime-main.fe959f08.js.map",
-    "static/css/2.b86a1409.chunk.css": "http;//masakiminamide.github.io/m-governance/static/css/2.b86a1409.chunk.css",
-    "static/js/2.ce4b8584.chunk.js": "http;//masakiminamide.github.io/m-governance/static/js/2.ce4b8584.chunk.js",
-    "static/js/2.ce4b8584.chunk.js.map": "http;//masakiminamide.github.io/m-governance/static/js/2.ce4b8584.chunk.js.map",
-    "index.html": "http;//masakiminamide.github.io/m-governance/index.html",
-    "precache-manifest.623822e406bfa01b443edb9af891d029.js": "http;//masakiminamide.github.io/m-governance/precache-manifest.623822e406bfa01b443edb9af891d029.js",
-    "service-worker.js": "http;//masakiminamide.github.io/m-governance/service-worker.js",
-    "static/css/2.b86a1409.chunk.css.map": "http;//masakiminamide.github.io/m-governance/static/css/2.b86a1409.chunk.css.map",
-    "static/js/2.ce4b8584.chunk.js.LICENSE": "http;//masakiminamide.github.io/m-governance/static/js/2.ce4b8584.chunk.js.LICENSE",
-    "static/media/semantic.min.css": "http;//masakiminamide.github.io/m-governance/static/media/outline-icons.ef60a4f6.woff",
-    "static/media/headerImage.jpg": "http;//masakiminamide.github.io/m-governance/static/media/headerImage.921a8a97.jpg",
-    "static/media/image-01.jpg": "http;//masakiminamide.github.io/m-governance/static/media/image-01.13287163.jpg",
-    "static/media/image-02.jpg": "http;//masakiminamide.github.io/m-governance/static/media/image-02.314609e2.jpg",
-    "static/media/logo.png": "http;//masakiminamide.github.io/m-governance/static/media/logo.86ad1536.png"
+    "main.js": "/m-governance/static/js/main.53e98836.chunk.js",
+    "main.js.map": "/m-governance/static/js/main.53e98836.chunk.js.map",
+    "runtime-main.js": "/m-governance/static/js/runtime-main.0b6e4f5d.js",
+    "runtime-main.js.map": "/m-governance/static/js/runtime-main.0b6e4f5d.js.map",
+    "static/css/2.b9b264b9.chunk.css": "/m-governance/static/css/2.b9b264b9.chunk.css",
+    "static/js/2.8c6ea6a5.chunk.js": "/m-governance/static/js/2.8c6ea6a5.chunk.js",
+    "static/js/2.8c6ea6a5.chunk.js.map": "/m-governance/static/js/2.8c6ea6a5.chunk.js.map",
+    "index.html": "/m-governance/index.html",
+    "precache-manifest.9f4eb591ed29c68f5177d627c4f463e9.js": "/m-governance/precache-manifest.9f4eb591ed29c68f5177d627c4f463e9.js",
+    "service-worker.js": "/m-governance/service-worker.js",
+    "static/css/2.b9b264b9.chunk.css.map": "/m-governance/static/css/2.b9b264b9.chunk.css.map",
+    "static/js/2.8c6ea6a5.chunk.js.LICENSE": "/m-governance/static/js/2.8c6ea6a5.chunk.js.LICENSE",
+    "static/media/semantic.min.css": "/m-governance/static/media/outline-icons.ef60a4f6.woff",
+    "static/media/headerImage.jpg": "/m-governance/static/media/headerImage.921a8a97.jpg",
+    "static/media/image-01.jpg": "/m-governance/static/media/image-01.13287163.jpg",
+    "static/media/image-02.jpg": "/m-governance/static/media/image-02.314609e2.jpg",
+    "static/media/logo.png": "/m-governance/static/media/logo.86ad1536.png"
   },
   "entrypoints": [
-    "static/js/runtime-main.fe959f08.js",
-    "static/css/2.b86a1409.chunk.css",
-    "static/js/2.ce4b8584.chunk.js",
+    "static/js/runtime-main.0b6e4f5d.js",
+    "static/css/2.b9b264b9.chunk.css",
+    "static/js/2.8c6ea6a5.chunk.js",
     "static/js/main.53e98836.chunk.js"
   ]
 }
