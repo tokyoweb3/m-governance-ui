@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import keyring from '@polkadot/ui-keyring';
 // Styles, tools
-import { Container, Dimmer, Loader} from 'semantic-ui-react';
+import { Container, Dimmer, Loader, Grid} from 'semantic-ui-react';
 import types from './Type';
 // Components
 import HomepageLayout from './HomepageLayout';
@@ -22,16 +22,18 @@ import Tutorial from './Tutorial/Tutorial';
 
 import 'semantic-ui-css/semantic.min.css'
 import CertificateView from './Certificate/CertificateView';
+import ChainInfo from './Vote/ChainInfo';
 
 export default function App () {
   const [api, setApi] = useState();
   const [apiReady, setApiReady] = useState();
   const [blockNumber, setBlockNumber] = useState('0');
-  const WS_PROVIDER = 'ws://127.0.0.1:9944';
+
+  let WS_PROVIDER = window.location.hostname == "localhost"? 'ws://localhost:9944' : 'wss://m-governance.org';
 
   useEffect(() => {
     const provider = new WsProvider(WS_PROVIDER);
-
+    console.log("WS endpoint=" + WS_PROVIDER);
     ApiPromise.create({provider, types})
       .then((api: { isReady: Promise<any>; }) => {
         setApi(api);
@@ -91,10 +93,22 @@ export default function App () {
               keyring={keyring}
               blockNumber={blockNumber}
             />
-            <CreateVote
-              api={api}
-              keyring={keyring}
-            />
+            <Grid>
+              <Grid.Row>
+              <Grid.Column width={10}>
+                <CreateVote
+                  api={api}
+                  keyring={keyring}
+                />
+              </Grid.Column>
+              <Grid.Column width={6}>
+                <ChainInfo 
+                  api={api}
+                  blockNumber={blockNumber}
+                  />
+              </Grid.Column>
+              </Grid.Row>
+            </Grid>
             </Route>
 
             <Route path="/tutorial">

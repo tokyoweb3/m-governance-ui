@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData, Segment, Message, ButtonContentProps } from 'semantic-ui-react';
+import { Popup, Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData, Segment, Message, ButtonContentProps } from 'semantic-ui-react';
 const helper = require('./helper.tsx');
 
 interface Status{
@@ -21,6 +21,11 @@ const voteTypeOptions = [
   {key: 1, value: 1, text: 'Lock Vote'},
   {key: 2, value: 2, text: 'Quadratic Vote'}
 ];
+const popup = {
+  borderRadius: 0,
+  opacity: 0.7,
+  padding: '2em',
+}
 
 export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
   const [message, setMessage] = useState({header: "", content:"", success:false, error:false, warning:false});
@@ -111,16 +116,32 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
     const [count, setCount] = useState<number>(2);
     // add or remove option input
     const onClickOption= (_: any, data: ButtonContentProps) => {
-      setCount(data.state==='add'?count+1 : count-1);
+      // setCount(data.state==='add'?count+1 : count-1);
+      if(data.state==='add'){
+        setCount(count+1);
+      } else {
+        setCount(count-1);
+        let newVals = vals;
+        delete newVals[count-1];
+        setVals(newVals);
+      }
     }
-    
+
+    const canSend = () => {
+      if(addressFrom && expLength && data && approved && vals[0] && vals[1]){
+        return false;
+      } 
+      return true;
+    }
+
     return (
         <Segment>
           <h1>CreateVote</h1>
           <Segment.Group>
             <Form>
                 <Form.Field>
-                <Dropdown
+                <Popup
+                  trigger={<Dropdown
                     placeholder='Select from your accounts'
                     fluid
                     label="From"
@@ -129,10 +150,16 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
                     selection
                     state='addressFrom'
                     options={keyringOptions}
+                />}
+                  content='Select an account that you want to create a vote with. The account must own some free balance.'
+                  style={popup}
+                  inverted
+                  on={"click"}
                 />
                 </Form.Field>
                 <Form.Field>
-                <Dropdown
+                <Popup
+                  trigger={<Dropdown
                     placeholder='Select Vote type'
                     fluid
                     label="VoteType"
@@ -141,22 +168,33 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
                     selection
                     state='voteType'
                     options={voteTypeOptions}
+                />}
+                  content='Each vote method has different ways of casting and tallying.'
+                  style={popup}
+                  inverted
+                  on={"click"}
                 />
-
                 </Form.Field>
                 <Form.Field>
-                <Input
+                <Popup
+                  trigger={<Input
                     label='Expire Length'
                     fluid
                     onChange={onChange}
                     state='expLength'
                     placeholder='BlockNumber: u64'
                     type='number'
+                />}
+                  content='Any vote can be concluded after block expiration period. After the expiration, the vote no longer accept a ballot.'
+                  style={popup}
+                  inverted
+                  on={"click"}
                 />
                 </Form.Field>
 
                 <Form.Field>
-                <Dropdown
+                <Popup
+                  trigger={<Dropdown
                     placeholder='Select CA from the list'
                     fluid
                     label="Approved"
@@ -165,16 +203,28 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
                     selection
                     state='approved'
                     options={caOptions}
+                />}
+                  header='Central Authority'
+                  content='Only accounts registered with a digital certificate which is cryptographically signed by the Central Authoriy can participate in this vote. You can add a new CA or register your account in Certificate tab. Permissionless means any account can participate in the voting.'
+                  style={popup}
+                  inverted
+                  on={"click"}
                 />
 
                 </Form.Field>
                 <Form.Field>
-                <Input
+                <Popup
+                  trigger={<Input
                     label='Data'
                     fluid
                     onChange={onChange}
                     state='data'
                     type='string'
+                />}
+                  content='Any string data less than 256bytes. (e.g. title, url, description, etc..)'
+                  style={popup}
+                  inverted
+                  on={"click"}
                 />
                 </Form.Field>
                 <Form.Field>
@@ -216,6 +266,7 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
                 <Button
                     onClick={createVote}
                     primary
+                    disabled={canSend()}
                     type='submit'
                 >
                     Send
