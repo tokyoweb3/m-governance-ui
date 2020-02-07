@@ -1,26 +1,26 @@
 {
   "files": {
-    "main.js": "/m-governance-ui/static/js/main.31d4951d.chunk.js",
-    "main.js.map": "/m-governance-ui/static/js/main.31d4951d.chunk.js.map",
-    "runtime-main.js": "/m-governance-ui/static/js/runtime-main.d3c691ac.js",
-    "runtime-main.js.map": "/m-governance-ui/static/js/runtime-main.d3c691ac.js.map",
+    "main.js": "/m-governance-ui/static/js/main.647c2f31.chunk.js",
+    "main.js.map": "/m-governance-ui/static/js/main.647c2f31.chunk.js.map",
+    "runtime-main.js": "/m-governance-ui/static/js/runtime-main.330ed327.js",
+    "runtime-main.js.map": "/m-governance-ui/static/js/runtime-main.330ed327.js.map",
     "static/css/2.e8890cb7.chunk.css": "/m-governance-ui/static/css/2.e8890cb7.chunk.css",
-    "static/js/2.6b4329af.chunk.js": "/m-governance-ui/static/js/2.6b4329af.chunk.js",
-    "static/js/2.6b4329af.chunk.js.map": "/m-governance-ui/static/js/2.6b4329af.chunk.js.map",
+    "static/js/2.e1d68366.chunk.js": "/m-governance-ui/static/js/2.e1d68366.chunk.js",
+    "static/js/2.e1d68366.chunk.js.map": "/m-governance-ui/static/js/2.e1d68366.chunk.js.map",
     "index.html": "/m-governance-ui/index.html",
-    "precache-manifest.f86f1cb966b1dc735df6439ebb434fc8.js": "/m-governance-ui/precache-manifest.f86f1cb966b1dc735df6439ebb434fc8.js",
+    "precache-manifest.6ca5a920d5746be66dea9434e9282a5a.js": "/m-governance-ui/precache-manifest.6ca5a920d5746be66dea9434e9282a5a.js",
     "service-worker.js": "/m-governance-ui/service-worker.js",
     "static/css/2.e8890cb7.chunk.css.map": "/m-governance-ui/static/css/2.e8890cb7.chunk.css.map",
-    "static/js/2.6b4329af.chunk.js.LICENSE": "/m-governance-ui/static/js/2.6b4329af.chunk.js.LICENSE",
+    "static/js/2.e1d68366.chunk.js.LICENSE": "/m-governance-ui/static/js/2.e1d68366.chunk.js.LICENSE",
     "static/media/semantic.min.css": "/m-governance-ui/static/media/outline-icons.ef60a4f6.woff",
     "static/media/headerImage.jpg": "/m-governance-ui/static/media/headerImage.921a8a97.jpg",
     "static/media/image-01.jpg": "/m-governance-ui/static/media/image-01.13287163.jpg",
     "static/media/logo.png": "/m-governance-ui/static/media/logo.86ad1536.png"
   },
   "entrypoints": [
-    "static/js/runtime-main.d3c691ac.js",
+    "static/js/runtime-main.330ed327.js",
     "static/css/2.e8890cb7.chunk.css",
-    "static/js/2.6b4329af.chunk.js",
-    "static/js/main.31d4951d.chunk.js"
+    "static/js/2.e1d68366.chunk.js",
+    "static/js/main.647c2f31.chunk.js"
   ]
 }
