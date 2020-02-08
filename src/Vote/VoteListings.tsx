@@ -119,8 +119,7 @@ export default function VoteListings ({api, blockNumber}: Props) {
                 <Table.Cell textAlign='right'><Link to={`/vote/${id}`}>{id}</Link>
                 </Table.Cell>
                 <Table.Cell>{votes[index] && typeOfVote(votes[index].vote_type)}</Table.Cell>
-                {/* TODO: add link to CA*/}
-                <Table.Cell>{votes[index] && votes[index].approved}</Table.Cell> 
+                <Table.Cell>{votes[index] && votes[index].approved.substring(0, 8) + '...'}</Table.Cell> 
                 <Table.Cell>{votes[index] && votes[index].creator}</Table.Cell>
                 <Table.Cell>{votes[index] && votes[index].when}</Table.Cell>
                 <Table.Cell style={colorByExpired(votes[index] && votes[index].vote_ends)}>{votes[index] && votes[index].vote_ends}</Table.Cell>

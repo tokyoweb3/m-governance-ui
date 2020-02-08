@@ -41,12 +41,14 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
   const { vote_type, approved, creator, vote_ends, when, concluded, data } = voteState;
   const [optionState, setOptionState] = useState<string[]>([]);
   const [accounts, setAccounts] = useState<string[][]>([]);
+  const [caData, setCaData] = useState<string>();
+  const [index, setIndex] = useState<number>();
 
   const panes = [
     { menuItem: {key: 'voteView', icon: 'info', content: 'VoteView'}, render: ()=> 
     <Tab.Pane>
       {voteView()}
-      <CastBallot api={api} keyring={keyring} id={id} options={optionState}/>
+      <CastBallot api={api} keyring={keyring} id={id!} options={optionState} voteType={vote_type}/>
       <ResultChart options={optionState} accounts={accounts}/>
     </Tab.Pane>},
     { menuItem: {key: 'conclude', icon: 'check circle', content: 'Conclude'}, render: ()=> <Tab.Pane>
@@ -61,7 +63,7 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
       [api.query.governanceModule.votesByIndex, id],
       [api.query.governanceModule.data, id],
       [api.query.governanceModule.voteOptions, id],
-    ], ([vote, data, options]:[VoteToString, string, string[] ]) => {
+    ], ([vote, data, options]:[VoteToString, string, string[]]) => {
       setVoteState({
         vote_type: vote.vote_type.toString(),
         approved: vote.approved.toString(),
@@ -73,6 +75,13 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
       });
       setOptionState(options);
       getAccounts(options);
+
+      api.query.certificateModule.indexByCAHash(vote.approved, (index:number) => {
+        api.query.certificateModule.cADataByIndex(index, (caData:string) =>{
+          setIndex(index);
+          setCaData(helper.hex2a(caData));
+        })
+      });
     });
     }
     f().then((unsub: any) => {unsubscribe = unsub;})
@@ -109,7 +118,8 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
         <li>CreatedAt# {when}</li>
         <li>Creator: {creator}</li>
         <li>VoteType: {typeOfVote(vote_type)}</li>
-        <li>Approved: {approved}</li>
+        <li>CAData: {index!=0?caData:'Permissionless'}</li>
+    <li>Approved: {index!=0?<Link to={`/certificate/${index}/${approved}`}>{approved}</Link>:approved}</li>
         <li>VoteEndsAt# {vote_ends}</li>
         <li>Concluded: {concluded}</li>
         <li>

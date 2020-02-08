@@ -30,6 +30,7 @@ export default function App () {
   const [blockNumber, setBlockNumber] = useState('0');
 
   let WS_PROVIDER = window.location.hostname == "localhost"? 'ws://localhost:9944' : 'wss://m-governance.org';
+  // let basename = window.location.hostname == "localhost"? '/': '/apps.m-governance.org';
 
   useEffect(() => {
     const provider = new WsProvider(WS_PROVIDER);
@@ -80,7 +81,7 @@ export default function App () {
         blockNumber={blockNumber}
       />
 
-      <Router>
+      <Router basename={`/#`}>
           <MenuBar/>
           <Switch>
             <Route 
