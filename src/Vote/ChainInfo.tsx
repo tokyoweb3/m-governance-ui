@@ -42,7 +42,7 @@ export default function ChainInfo({api, blockNumber}: {api:any; blockNumber:stri
     timer.current.reset();
   }, [blockNumber])
   
-  if(prevBlock != blockNumber) {
+  if(prevBlock !== blockNumber) {
     api.query.system.events((events:any) => {
       let contents:string[] = [];
 

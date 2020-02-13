@@ -58,21 +58,21 @@ export default function CastBallot({api, keyring, id, options, voteType}: Props)
   // }, [id])
 
   const canSend = () => {
-    if(voteType == 0 && addressFrom && reference_id && ballot >= 0){
+    if(voteType === 0 && addressFrom && reference_id && ballot >= 0){
       return false;
     }
     else if(voteType == 1 && addressFrom && reference_id && ballot >= 0 && deposit && duration ){
       return false;
-    } 
+    }
     return true;
   }
 
   const castBallot = () => {
     switch (voteType){
-      case '0': 
+      case '0':
         normalVote();
         break;
-      case '1': 
+      case '1':
         lockVote();
         break;
       default: break;

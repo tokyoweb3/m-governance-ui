@@ -6,6 +6,7 @@ import { Segment, Tab } from 'semantic-ui-react';
 import CastBallot from './castBallot';
 import ConcludeVote from './concludeVote';
 import ResultChart from './ResultChart';
+import Withdraw from './Withdraw';
 
 const helper = require('./helper.tsx');
 
@@ -18,7 +19,7 @@ interface VoteState {
   vote_type: number;
   approved?: string;
   creator?: string;
-  vote_ends?: string 
+  vote_ends?: string
   when?: string
   concluded?: string
   data?: string
@@ -45,7 +46,7 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
   const [index, setIndex] = useState<number>();
 
   const panes = [
-    { menuItem: {key: 'voteView', icon: 'info', content: 'VoteView'}, render: ()=> 
+    { menuItem: {key: 'voteView', icon: 'info', content: 'VoteView'}, render: ()=>
     <Tab.Pane>
       {voteView()}
       <CastBallot api={api} keyring={keyring} id={id!} options={optionState} voteType={vote_type}/>
@@ -53,6 +54,9 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
     </Tab.Pane>},
     { menuItem: {key: 'conclude', icon: 'check circle', content: 'Conclude'}, render: ()=> <Tab.Pane>
       <ConcludeVote api={api} keyring={keyring} id={id!} vote_ends={parseInt(vote_ends!)} concluded={concluded!} blockNumber={parseInt(blockNumber!)}/>
+    </Tab.Pane>},
+    { menuItem: {key: 'withdraw', icon: 'money', content: 'Withdraw'}, render: ()=> <Tab.Pane>
+      <Withdraw api={api} keyring={keyring} id={id!} concluded={concluded!} />
     </Tab.Pane>},
   ]
 
@@ -86,7 +90,7 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
     }
     f().then((unsub: any) => {unsubscribe = unsub;})
     .catch(console.error);
-    
+
     return () => unsubscribe && unsubscribe();
   }, [ id ])
 
@@ -143,11 +147,11 @@ export default function VoteView({api, keyring, blockNumber}: Props) {
         </li>
       </ul>
       </Segment>
-      
+
     );
   }
   return(
-    <Segment.Group>    
+    <Segment.Group>
       <Tab menu={{color: 'grey', inverted: true}} panes={panes} />
     </Segment.Group>
   );

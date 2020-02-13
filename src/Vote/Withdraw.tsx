@@ -5,8 +5,6 @@ interface Props {
   api: {query: any, tx: any; };
   keyring: {getPairs: any, getPair: any ;};
   id: string;
-  blockNumber: number;
-  vote_ends: number;
   concluded: string;
 }
 interface Status{
@@ -16,17 +14,16 @@ interface Status{
     type: string
   }
 }
-export default function ConcludeVote({ api, keyring, id, blockNumber, vote_ends, concluded } : Props) {
+export default function Withdraw({ api, keyring, id, concluded } : Props) {
   const [message, setMessage] = useState({header: "", content:"", success:false, error:false, warning:false});
   // when all requirements are set true, clickable
   const requirements = {
-    isExpired: false,
-    isConcluded: false,
+    isConcluded: concluded === 'true'?true:false,
     isSelected: false
   };
   const [clickable, setClickable] = useState(requirements);
 
-  const { isExpired, isConcluded, isSelected } = clickable;
+  const { isConcluded, isSelected } = clickable;
 
   const initialState = {
     addressFrom: '',
@@ -57,12 +54,12 @@ export default function ConcludeVote({ api, keyring, id, blockNumber, vote_ends,
     });
   }
 
-  const concludeVote = () => {
+  const withdraw  = () => {
     const fromPair = keyring.getPair(addressFrom);
     setMessage({...message, header: 'Just one second', content: 'Sending...', warning: true});
 
     api.tx.governanceModule
-    .concludeVote(reference_id)
+    .withdraw(reference_id)
     .signAndSend(fromPair, ({status}: Status) => {
       if (status.isFinalized) {
         setMessage({...message, header: 'Transaction Completed!', content:`Completed at block hash #${status.asFinalized.toString()}`, success:true});
@@ -75,25 +72,8 @@ export default function ConcludeVote({ api, keyring, id, blockNumber, vote_ends,
       });
   }
 
-  useEffect(() => {
-    let unsubscribe: () => any;
-    if (vote_ends < blockNumber) {
-      setClickable(clickable => {
-        return {
-          ...clickable,
-          isExpired: (vote_ends > 0 && vote_ends < blockNumber)?true:false,
-          isConcluded: (concluded === 'true')?true:false,
-        };
-      });
-    }
-    return () => {
-      unsubscribe && unsubscribe();
-    };
-  }, [blockNumber, isSelected, concluded, vote_ends])
-
-  // TODO:refactor this
-  const isDisabled = (isConcluded: boolean, isSelected:boolean, isExpired: boolean) => {
-    if(!isConcluded && isSelected && isExpired) {
+  const isDisabled = (isConcluded: boolean, isSelected:boolean) => {
+    if(isConcluded && isSelected) {
       return false;
     }
     return true;
@@ -101,10 +81,9 @@ export default function ConcludeVote({ api, keyring, id, blockNumber, vote_ends,
 
   return(
     <Segment>
-      <h1>Conclude Vote</h1>
+      <h1>Withdraw</h1>
       <ul> Requirements
         <li>isConcluded: {isConcluded? 'True': 'False'}</li>
-        <li>isExpired: {isExpired? 'True': 'False'}</li>
         <li>isSelected: {isSelected? 'True':'False'}</li>
       </ul>
       <Form>
@@ -122,11 +101,11 @@ export default function ConcludeVote({ api, keyring, id, blockNumber, vote_ends,
         </Form.Field>
         <Form.Field>
           <Button
-            onClick={concludeVote}
-            disabled={isDisabled(isConcluded, isSelected, isExpired)}
+            onClick={withdraw}
             primary
+            disabled={isDisabled(isConcluded, isSelected)}
             type='submit'>
-            Conclude
+            Withdraw
           </Button>
         </Form.Field>
       </Form>
@@ -140,3 +119,4 @@ export default function ConcludeVote({ api, keyring, id, blockNumber, vote_ends,
     </Segment>
   );
 }
+
