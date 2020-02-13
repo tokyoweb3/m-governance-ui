@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { Popup, Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData, Segment, Message, ButtonContentProps } from 'semantic-ui-react';
+import { getPair } from '../apihelpers';
 const helper = require('./helper.tsx');
 
 interface Status{
@@ -93,8 +94,8 @@ export default function CreateVote({api, keyring}: {api:any; keyring:any}) {
       return () => unsubscribe && unsubscribe();
     }, [])
 
-    const createVote = () => {
-        const fromPair = keyring.getPair(addressFrom);
+    const createVote = async () => {
+        const fromPair = await getPair(api, keyring, addressFrom);
         const options:string[] = Object.values(vals).map(val => val)
         setMessage({...message, header: 'Just one second', content: 'Sending...', warning: true});
         

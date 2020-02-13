@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Dropdown, Form, TextArea, TextAreaProps, DropdownProps, Segment, Message, Input, InputOnChangeData } from 'semantic-ui-react';
 import {createPKIJSCertificate, removePemArmoring} from './pkijshelpers';
+import { getPair } from '../apihelpers';
 const utils = require('pvtsutils');
 const pkiJS = require('pkijs');
 
@@ -36,7 +37,7 @@ export default function RegisterCA ({api, keyring}: Props) {
   }
   const registerCA = async () => {
     try{
-    const fromPair = keyring.getPair(addressFrom);
+    const fromPair = await getPair(api, keyring, addressFrom);
     const rawCA = createPKIJSCertificate(pem);
     const thumbCA = await crypto.subtle.digest("SHA-256", rawCA.tbs);
     const hexThumbCA = utils.Convert.ToHex(thumbCA);

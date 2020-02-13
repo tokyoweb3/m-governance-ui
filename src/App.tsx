@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 // Polkadot API
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import keyring from '@polkadot/ui-keyring';
+import  { web3Accounts, web3Enable } from '@polkadot/extension-dapp';
 // Styles, tools
 import { Container, Dimmer, Loader, Grid} from 'semantic-ui-react';
 import types from './Type';
@@ -27,6 +28,7 @@ import ChainInfo from './Vote/ChainInfo';
 export default function App () {
   const [api, setApi] = useState();
   const [apiReady, setApiReady] = useState();
+  const [accountLoaded, setAccountLoaded] = useState(false);
   const [blockNumber, setBlockNumber] = useState('0');
 
   let WS_PROVIDER = window.location.hostname == "localhost"? 'ws://localhost:9944' : 'wss://m-governance.org';
@@ -43,11 +45,39 @@ export default function App () {
       .catch((e: any) => console.error(e));
   }, []);
 
-  useEffect(() => { 
-    keyring.loadAll({
+  // new hook to get injected accounts
+  useEffect(() => {
+    web3Enable('M-Governance')
+    .then((extensions) => {
+    // web3Accounts promise returns an array of accounts
+    // or an empty array if our user doesn't have an extension or hasn't given the
+    // access to any of their account.
+    web3Accounts()
+        .then((accounts) => {
+            // add the source to the name to avoid confusion
+            return accounts.map(({ address, meta }) => ({
+                address,
+                meta: {
+                ...meta,
+                name: `${meta.name} (${meta.source})`
+                }
+            }));
+        })
+        // load our keyring with the newly injected accounts
+        .then((injectedAccounts) => {
+            loadAccounts(injectedAccounts);
+        })
+        .catch(console.error);
+    })
+    .catch(console.error);
+  }, []);
+  
+  const loadAccounts = (injectedAccounts:any) => {
+  keyring.loadAll({
       isDevelopment: true
-    });
-  },[]); 
+  }, injectedAccounts);
+  setAccountLoaded(injectedAccounts.length?true:false);
+  };
 
   useEffect(() => {
     if(apiReady){

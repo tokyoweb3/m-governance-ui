@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Dropdown, Form, Header, DropdownProps, Segment } from 'semantic-ui-react';
 import { cAPem } from './pemCerts';
 import {createPKIJSCertificate} from './pkijshelpers';
+import { getPair } from '../apihelpers';
 const utils = require('pvtsutils');
 const pkiJS = require('pkijs');
 const helper = require('../Vote/helper.tsx');
@@ -243,7 +244,7 @@ export default function Register ({api, keyring, ws, caOptions}: Props) {
   }
 
   const registerAccount = async () => {
-    const fromPair = keyring.getPair(addressFrom);
+    const fromPair = await getPair(api, keyring, addressFrom); 
     const crypto = await ws.getCrypto(selectedProvider);
 
     const cert = await crypto.certStorage.getItem(certificateIndex);

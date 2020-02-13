@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Button, Dropdown, Form, Input, DropdownProps, InputOnChangeData, Segment, Message} from 'semantic-ui-react';
+import { getPair } from '../apihelpers';
 
 interface Props {
-  api: {query: any, tx: any; };
+  api: {query: any, tx: any; setSigner: any; };
   keyring: {getPairs: any, getPair: any ;};
 }
 interface Status{
@@ -39,11 +40,13 @@ export default function Transfer ({api, keyring} : Props) {
       };
     });
   };
-  
-  const makeTransfer = () => {
-    const fromPair = keyring.getPair(addressFrom);
+
+
+  const makeTransfer = async () => {
+    let fromPair = await getPair(api, keyring, addressFrom);
 
     setMessage({...message, header: 'Just one second', content: 'Sending...', warning: true});
+
     api.tx.balances
     .transfer(addressTo, amount)
     .signAndSend(fromPair, ({ status }: Status) => {

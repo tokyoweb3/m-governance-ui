@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { Button, Dropdown, Form, DropdownProps, Segment, Message } from 'semantic-ui-react';
+import { getPair } from '../apihelpers';
 
 interface Props {
   api: {query: any, tx: any; };
@@ -54,8 +55,8 @@ export default function Withdraw({ api, keyring, id, concluded } : Props) {
     });
   }
 
-  const withdraw  = () => {
-    const fromPair = keyring.getPair(addressFrom);
+  const withdraw  = async () => {
+    const fromPair = await getPair(api, keyring, addressFrom);
     setMessage({...message, header: 'Just one second', content: 'Sending...', warning: true});
 
     api.tx.governanceModule

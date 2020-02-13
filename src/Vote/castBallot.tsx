@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { Button, Dropdown, Form, DropdownProps, Message, Segment, Popup, Input, InputOnChangeData } from 'semantic-ui-react';
+import { getPair } from '../apihelpers';
 const helper = require('./helper.tsx');
 
 interface Props {
@@ -79,8 +80,8 @@ export default function CastBallot({api, keyring, id, options, voteType}: Props)
     }
   }
   // fn cast_lockvote(origin, reference_index: ReferenceIndex, ballot: Ballot, deposit: BalanceOf<T>, duration: T::BlockNumber) -> Result {
-  const lockVote = () => {
-    const fromPair = keyring.getPair(addressFrom);
+  const lockVote = async () => {
+    const fromPair = await getPair(api, keyring, addressFrom);
     setMessage({...message, header: 'Just one second', content: 'Sending...', warning: true});
     api.tx.governanceModule
     .castLockvote(reference_id, ballot, deposit, duration)
