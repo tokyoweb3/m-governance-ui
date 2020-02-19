@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Dropdown, Form, Header, DropdownProps, Segment } from 'semantic-ui-react';
-import { cAPem } from './pemCerts';
 import {createPKIJSCertificate} from './pkijshelpers';
 import { getPair } from '../apihelpers';
 const utils = require('pvtsutils');
@@ -117,7 +116,7 @@ export default function Register ({api, keyring, ws, caOptions}: Props) {
       }
       catch(e){console.error(e)};
   }
-  
+
   const verify = async(signature: {}, message: string) => {
     const crypto = await ws.getCrypto(selectedProvider);
     const publicKey = await GetCertificateKey("public", crypto, certificateIndex);
@@ -128,7 +127,7 @@ export default function Register ({api, keyring, ws, caOptions}: Props) {
       const spki = await crypto.subtle.exportKey("spki", publicKey);
       rsassaPublicKey = await crypto.subtle.importKey("spki", spki, {name: "RSASSA-PKCS1-v1_5", hash: "SHA-256"}, true, ["verify"]);
     }
-    
+
     try{
       const ok = await crypto.subtle.verify(alg, rsassaPublicKey || publicKey, signature, message);
       setRequirements({
@@ -152,22 +151,22 @@ export default function Register ({api, keyring, ws, caOptions}: Props) {
     let privateKeys:string[] = [];
 
     // get Private keys
-    const getKey = async () =>{  
+    const getKey = async () =>{
       const indexes = await crypto.keyStorage.keys();
       for (const index of indexes) {
         try {
           const item = await crypto.keyStorage.getItem(index);
           if (item.type === "private") {
             privateKeys.push(index);
-          } 
+          }
         } catch (e) {
           console.error(`Cannot get ${index} from CertificateStorage`)
           console.error(e);
         }
       }}
-    
+
     // get certs of which id matches with private key.(only takes certs with privatekeys, because sign and verificaiton requires one matching pair of public and privatekey)
-    const getCert = async() => { 
+    const getCert = async() => {
       const certs:string[] = await crypto.certStorage.keys();
       setCertificateOptions([]);
       for(const keyId of privateKeys){
@@ -207,12 +206,12 @@ export default function Register ({api, keyring, ws, caOptions}: Props) {
     const caPem2 = await api.query.certificateModule.cAStore(CAIndex+1);
 
     const caRaw = createPKIJSCertificate(helper.hex2a(caPem2));
-  
+
     const chainValidator = new pkiJS.CertificateChainValidationEngine({
       certs: [userRaw],
       trustedCerts: [caRaw]
     });
-  
+
     const { result, resultCode, resultMessage } = await chainValidator.verify();
     console.log(result, resultCode, resultMessage);
     setRequirements({
@@ -244,7 +243,7 @@ export default function Register ({api, keyring, ws, caOptions}: Props) {
   }
 
   const registerAccount = async () => {
-    const fromPair = await getPair(api, keyring, addressFrom); 
+    const fromPair = await getPair(api, keyring, addressFrom);
     const crypto = await ws.getCrypto(selectedProvider);
 
     const cert = await crypto.certStorage.getItem(certificateIndex);
@@ -258,7 +257,7 @@ export default function Register ({api, keyring, ws, caOptions}: Props) {
     const caRaw = createPKIJSCertificate(helper.hex2a(caPem));
     const thumbCA = await crypto.subtle.digest("SHA-256", caRaw.tbs);
     const hexThumbCA = utils.Convert.ToHex(thumbCA);
-    
+
     // console.log(thumbCert);
     console.log("hexThumbPub: ", hexThumbCert);
     console.log("hexThumbCA: ", hexThumbCA);
@@ -311,11 +310,11 @@ export default function Register ({api, keyring, ws, caOptions}: Props) {
   // const lineMaker = (str: string) =>{
   //   return str.replace(/(.{100})/g, "$1 ");
   // }
-  
+
   const canRegister = () => {
     if(addressFrom && certificateIndex && hexThumbSignature && verified && validated){
       return false;
-    } 
+    }
     return true;
   }
   const getColor =(v:boolean)=>{
@@ -324,9 +323,9 @@ export default function Register ({api, keyring, ws, caOptions}: Props) {
     }
     return {color:"red"}
   }
-  
+
   return(
-    <Segment>  
+    <Segment>
       <h1>Register</h1>
       <h3>Requirements:</h3>
       <ul>
@@ -389,7 +388,7 @@ export default function Register ({api, keyring, ws, caOptions}: Props) {
         {formState.hexThumbSignature}
         <h3>Verification: {`${verified}`}</h3>
       </div>
-      
+
       <h2>Select Root CA to validate your certification.</h2>
       <Form>
           <Form.Field>
@@ -430,7 +429,7 @@ export default function Register ({api, keyring, ws, caOptions}: Props) {
       {status}
     </Segment>
   );
-} 
+}
 
 function GetCommonName(name: string) {
   var reg = /CN=(.+),?/i;

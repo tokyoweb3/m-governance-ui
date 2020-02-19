@@ -17,10 +17,10 @@ interface Props {
   api: {query: any, tx: any; };
   keyring: {getPairs: any, getPair: any ;};
 }
-interface MyWindow extends Window {  
+interface MyWindow extends Window {
   WebcryptoSocket: any;
-}  
-declare var window: MyWindow;  
+}
+declare var window: MyWindow;
 
 export default function Certificate ({ api, keyring }: Props) {
   const [ws, setWs] = useState();
@@ -35,7 +35,7 @@ export default function Certificate ({ api, keyring }: Props) {
   ];
 
   // load libs
-  useEffect(() => { 
+  useEffect(() => {
     for (const id in urls) {
       let tag = document.createElement('script');
       tag.async = false;
@@ -49,7 +49,7 @@ export default function Certificate ({ api, keyring }: Props) {
     }).then((unsub: any) => {unsubscribe = unsub; })
       .catch(console.error);
     return () => unsubscribe && unsubscribe();
-  },[]); 
+  },[]);
 
   // get webcryptosocket
   useEffect(() => {

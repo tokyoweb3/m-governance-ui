@@ -3,8 +3,7 @@ node_modules
 .log
 src/Certificate/pemCerts.tsx
 images
-public
 build
 .DS_Store
 .lock
-.swp
+*.swp

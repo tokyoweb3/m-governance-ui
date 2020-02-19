@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Segment, Tab, Container } from 'semantic-ui-react';
+import { useParams } from 'react-router-dom';
+import { Segment } from 'semantic-ui-react';
 import { createPKIJSCertificate } from './pkijshelpers';
 const helper = require('../Vote/helper.tsx');
 
@@ -40,7 +40,7 @@ export default function CertificateView({api, keyring}: Props) {
       })
     }
       f()
-      .then((unsub: any) => { 
+      .then((unsub: any) => {
         unsubscribe = unsub;
         console.log(rawCA);
       })
@@ -61,7 +61,7 @@ export default function CertificateView({api, keyring}: Props) {
   <li>notBefore: {rawCA.notBefore && rawCA.notBefore.value.toString()}</li>
   <li>notAfter: {rawCA.notAfter && rawCA.notAfter.value.toString()}</li>
   <li>version: {rawCA.version && rawCA.version.toString()}</li>
-  <li>issuer: 
+  <li>issuer:
     <ol>
       {rawCA.issuer && rawCA.issuer.typesAndValues.map((val:{value: {valueBlock:{value: string}}}, i)=>{
         return  <li key={i}>{val.value.valueBlock.value.toString()}</li>;
@@ -81,7 +81,7 @@ export default function CertificateView({api, keyring}: Props) {
         <li>Votes</li>
         <li>Pem: <div style={pemStyle}><p>{lineMaker(pem)}</p></div></li>
       </ul>
-      
+
     </Segment>
   );
 }
