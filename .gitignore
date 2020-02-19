@@ -2,7 +2,6 @@ node_modules
 .vscode
 .log
 src/Certificate/pemCerts.tsx
-images
 build
 .DS_Store
 .lock
