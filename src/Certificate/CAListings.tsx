@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Dropdown, Form, Input, Container, Header, DropdownProps, Segment, Table } from 'semantic-ui-react';
-import { cAPem } from './pemCerts';
 import {createPKIJSCertificate} from './pkijshelpers';
 import { Link } from 'react-router-dom';
 const utils = require('pvtsutils');
